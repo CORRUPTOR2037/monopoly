@@ -1,0 +1,59 @@
+ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::before {
+    content: '\00a0';
+    width: 15px;
+    margin-right: 5px;
+    display: inline-block;
+    border: 1px solid;
+    border-radius: 2px;
+}
+.russian-parties .conservative span::before {
+    background: linear-gradient(45deg, #042885 50%, white 50%);
+}
+.russian-parties .communist span::before {
+    background: linear-gradient(45deg, white 50%, #d50000 50%);
+}
+.russian-parties .populist span::before {
+    background: linear-gradient(45deg, #006bb2 50%, #fff088 50%);
+}
+.russian-parties .socialist span::before {
+    background: linear-gradient(45deg, #fbca0b 50%, #d50000 50%);
+}
+.russian-parties .traditionalist span::before {
+    background: linear-gradient(45deg, #a10a0e 50%, #0056b9 50%);
+}
+.russian-parties .economist span::before {
+    background: linear-gradient(45deg, white 50%, #0056b9 50%);
+}
+.russian-parties .democrat span::before {
+    background: linear-gradient(45deg, #d62a52 50%, #5bb25d 50%);
+}
+.russian-parties .liberal span::before {
+    background: linear-gradient(45deg, white 50%, #96023d 50%);
+}
+.russian-parties .green span::before {
+    background: linear-gradient(45deg, #007a3d 50%, white 50%);
+}
+.russian-parties .right span::before {
+    background: linear-gradient(45deg, #009edc 50%, #e60f16 50%);
+}
+.russian-parties .monarchist span::before {
+    background: linear-gradient(45deg, black 50%, white 50%);
+}
+.russian-parties .progressivist span::before {
+    background: linear-gradient(45deg, white 50%, #50bfe8 50%);
+}
+.russian-parties .nationalist span::before {
+    background: linear-gradient(45deg, black 50%, yellow 50%);
+}
+.russian-parties .libertartian span::before {
+    background: linear-gradient(45deg, #db7042 50%, #c1a66f 50%);
+}
+.russian-parties .marxist span::before {
+    background: linear-gradient(45deg, black 50%, #d50000 50%);
+}
+.russian-parties .ultraconservative span::before {
+    background: linear-gradient(45deg, black 50%, #f09f2a 50%);
+}
+.russian-parties .pirate span::before {
+    background: linear-gradient(45deg, #f15d22 50%, black 50%);
+}

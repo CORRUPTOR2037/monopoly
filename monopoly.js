@@ -2647,6 +2647,34 @@ function setup() {
 	play();
 }
 
+function setPlayersSelection(count) {
+	var setup = document.getElementById("setup");
+	
+	for (var i = 1; i <= count; i++){
+		var player = document.createElement("div");
+		player.id = "player-input-" + i;
+		player.className = "player-input";
+		var html = "Игрок " + i + ": ";
+		html +=
+			    '<input type="text" class="player-name" id="player' + i + 'name" title="Player name" maxlength="20" value="Player ' + i + '" />\n' + 
+				'<select class="select-player" data-usesprite="russian-parties" id="player' + i + 'color" title="Player color" style="width:250px">\n';
+		players.forEach(function(player){
+			html +=
+					'<option class="' + player.style + '">' + getString(player.text) + ' (' + getString(difficultiesNames[player.difficulty-1]) + ')</option>\n'
+		})
+		html +=
+				'</select>\n' + 
+				'<select style="width:100px" class="select-player-ai" id="player' + i + 'ai" title="Выберите, будет ли этот игрок контролироваться вручную или компьютером." onclick="document.getElementById(\'player' + i + 'name\').disabled = this.value !== \'0\';">\n' + 
+				'	<option value="0">' + getString('human') + '</option>\n' + 
+				'	<option value="1" selected="selected">' + getString('ai') + '</option>\n' +
+				'</select>'
+		player.innerHTML = html;
+		setup.appendChild(player);
+	}
+	$(".select-player").msDropdown('{"width": 250}');
+	$(".select-player-ai").msDropdown();
+}
+
 // function togglecheck(elementid) {
 	// element = document.getElementById(elementid);
 
@@ -2687,11 +2715,14 @@ function getCheckedProperty() {
 function playernumber_onchange() {
 	pcount = parseInt(document.getElementById("playernumber").value, 10);
 
-	$(".player-input").hide();
-
-	for (var i = 1; i <= pcount; i++) {
-		$("#player" + i + "input").show();
-	}
+	$(".player-input").map(function(ind, t){
+		var id = t.id.split('-')[2];
+		if (id <= pcount) {
+			t.style.visibility = 'visible';
+        } else {
+			t.style.visibility = 'hidden';
+		}
+	})
 }
 
 function menuitem_onmouseover(element) {

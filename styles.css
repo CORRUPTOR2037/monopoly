@@ -1,7 +1,9 @@
 body {
-	background: #FFFFFF;
+	background: #151515;
 	margin: 0px;
 	min-width: 1075px;
+	color: white;
+	font: bold 12px "Fira Mono";
 }
 
 td {
@@ -11,11 +13,49 @@ td {
 	text-align: center;
 }
 
-#setup {
-	display: none;
-	margin: 15px;
+.game-window {
+  position: relative;
+  min-height: 700px;
 }
 
+.game-window > div {
+  height: 50%;
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+#setup {
+	width: 700px;
+}
+
+.player-input {
+	margin: 4px 0px;
+}
+
+.player-input .player-name {
+	display: inline-block;
+	background: #fff;
+	border: 1px solid #ccc;
+	color: #222;
+	font-size: 13px;
+	overflow: hidden;
+	text-overflow: clip;
+	z-index: 2;
+	border-radius: 3px;
+	height: 24px;
+}
+
+.player-input .dd {
+	border-radius: 3px;
+}
+
+.player-input .dd .ddTitle {
+    color: #000;
+    background: #fff;
+	border-radius: 1px;
+}
+	
 #moneybar {
 	float: right;
 	border: 0px solid black;
@@ -28,6 +68,7 @@ td {
 	cursor: default;
 	-webkit-user-select: none;
 	user-select: none;
+	display: hidden;
 }
 
 #moneybar table {
@@ -65,8 +106,6 @@ td {
 	display: none;
 	border: 2px solid black;
 	border-spacing: 3px;
-	margin: 25px;
-	float: left;
 }
 
 #jail {
