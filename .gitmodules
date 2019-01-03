@@ -1,9 +1,3 @@
-[submodule "wSelect"]
-	path = wSelect
-	url = https://github.com/websanova/wSelect
-[submodule "jQuery-Custom-Selectbox"]
-	path = jQuery-Custom-Selectbox
-	url = https://github.com/roblaplaca/jQuery-Custom-Selectbox
 [submodule "ms-Dropdown"]
 	path = ms-Dropdown
 	url = https://github.com/marghoobsuleman/ms-Dropdown
