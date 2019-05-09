@@ -1,0 +1,70 @@
+.cell.elections:before {
+    background: linear-gradient(to top, white 80%, #6eccff 80%);
+}
+.cell.privacy:before {
+    background: linear-gradient(to top, white 80%, #0b5cff 80%);
+}
+.cell.ecology:before {
+    background: linear-gradient(to top, white 80%, #5fd447 80%);
+}
+.cell.foreign-invest:before {
+    background: linear-gradient(to top, white 80%, #841acf 80%);
+}
+
+.cell.monopoly:before {
+    background: linear-gradient(to top, white 80%, #dec01d 80%);
+}
+.cell.business:before {
+    background: linear-gradient(to top, white 80%, #cf531a 80%);
+}
+
+.cell.human-rights:before {
+    background: linear-gradient(to top, white 80%, #ff0a0a 80%);
+}
+.cell.piar:before {
+    background: linear-gradient(to top, white 80%, #444 80%);
+}
+
+.cell.speech:before {
+    background: linear-gradient(to top, white 80%, #ff80bf 80%);
+}
+.cell.law:before {
+    background: linear-gradient(to top, white 80%, #f0ff5e 80%);
+}
+.cell.taxes:before {
+    background: linear-gradient(to top, white 80%, #007209 80%);
+}
+.cell.self-gov:before {
+    background: linear-gradient(to top, white 80%, #f910ff 80%);
+}
+
+.cell.new-session {
+    background-image: url('../images/ru/start.png');
+}
+.cell.jail {
+    background-image: url('../images/ru/jail.png');
+}
+.cell.vacation {
+    background-image: url('../images/ru/vacation.png');
+}
+.cell.scandal {
+    background-image: url('../images/ru/go_to_jail.png');
+}
+
+.cell.com-chest, .cell.chance, .cell.meeting, .cell.lobby {
+    background-color: white;
+    background-position: center center;
+}
+.cell.com-chest:before  {
+    background-image: url('../images/community_chest_icon.png');
+}
+.cell.chance:before  {
+    background-image: url('../images/chance_icon.png');
+}
+.cell.lobby:before  {
+    background-image: url('../images/lobby_icon.png');
+}
+.cell.meeting:before  {
+    background-image: url('../images/meeting_icon.png');
+}
+

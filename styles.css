@@ -1,12 +1,17 @@
+html, body {
+    height: 100%;
+}
+
 body {
 	background: #151515;
 	margin: 0px;
-	min-width: 1075px;
+	min-width: 900px;
+	min-height: 900px;
 	color: white;
 	font: bold 12px "Fira Mono";
 }
 
-td {
+#board .cell {
 	font-size: 12px;
 	font-family: arial, sans-serif;
 	border: 1px solid black;
@@ -16,10 +21,10 @@ td {
 .game-window {
   position: relative;
   min-height: 700px;
+  height: 100%;
 }
 
 .game-window > div {
-  height: 50%;
   margin: auto;
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
@@ -27,6 +32,7 @@ td {
 
 #setup {
 	width: 700px;
+	height: 50%;
 }
 
 .player-input {
@@ -58,22 +64,28 @@ td {
 	
 #moneybar {
 	float: right;
-	border: 0px solid black;
-	background-color: white;
 	margin: 15px;
 	border-radius: 5px;
 	display: none;
 	z-index: 14;
-	position: relative;
+	position: absolute;
 	cursor: default;
 	-webkit-user-select: none;
 	user-select: none;
-	display: hidden;
+    top: 0;
+    right: 0;
+    color: black;
 }
 
 #moneybar table {
 	font-weight: bold;
-	border-spacing: 1px;
+	border-spacing: 5px;
+}
+
+#moneybar table .moneybarcell {
+    border: 1px solid black;
+    font-size: 1.1em;
+    text-align: center;
 }
 
 #moneybarwrap {
@@ -102,56 +114,94 @@ td {
 	margin-left: 10px;
 }
 
+.hidden {
+    display: none !important;
+}
+
 #board {
-	display: none;
+	padding: 2%;
 	border: 2px solid black;
 	border-spacing: 3px;
 }
 
-#jail {
-	border: 1px solid black;
-	height: 65px;
-	width: 65px;
-	position: relative;
-	top: 73px;
-	left: -73px;
-	z-index: 2;
+#board table {
+	margin: 0 auto;
 }
 
+.panel {
+    background-color: #4b4b4b;
+    border-radius: 5px;
+    padding: 5px;
+    border: 0px solid black;
+}
 
 #control {
 	position: absolute;
 	z-index: 9;
-	top: 250px;
-	left: 250px;
-	border: 2px solid black;
-	padding: 10px;
-	display: none;
-	background-color: white;
+	top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    min-height: 215px;
+}
+#control table {
+    display: inline-block;
+    min-height: 215px;
 }
 
-#quickstats {
-	font-size: 12px;
-	font-weight: bold;
-	font-family: arial, sans-serif;
-	border: 2px solid blue;
-	margin: 5px;
-	padding: 3px;
-	width: 80px;
+#control #control-enlarge-wrap {
+    float: right;
+    margin-left: 20px;
+    width: 0px;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    height: 100%;
+    background: white;
+    display: inline-block;
 }
 
-#pname {
-	background-color: white;
+#control #control-enlarge {
+    top: 50%;
+    transform: translate(0, -50%);
 }
 
-#landed {
-	padding: 3px;
-	border: 1px solid gray;
-	border-top: none;
-	width: 302px;
+#control td {
+    vertical-align: top;
+}
 
-	margin: 0px;
-	text-align: center;
+#quickstats, .moneybarcell, #owned, #landed {
+    background: #363636;
+    border: 1px solid #626262;
+    border-radius: 2px;
+    color: white;
+    padding: 4px;
+}
+#owned {
+    width: 300px;
+    height: 16px;
+}
+
+.moneybarcell.selected {
+    background: white;
+    color: black;
+}
+
+#control button {
+    width: 88px;
+    background: linear-gradient(to bottom, #3e4c7b, #2b2f3f);
+    border: 2px solid #34353b;
+    border-radius: 2px;
+    font-weight: bold;
+    color: white;
+    font-size: 13px;
+    padding: 4px;
+    margin: 0px;
+    margin-right: 0px;
+}
+
+#control button:hover {
+    background: #aaa;
 }
 
 #alert {
@@ -160,6 +210,7 @@ td {
 	margin: 0px;
 	padding-left: 1px;
 	border: 1px solid gray;
+    color: black;
 	font-family: Consolas, "Courier New", monospace;
 	font-size: 13px;
 	background-color: #FFFFFF;
@@ -202,14 +253,6 @@ td {
 	height: 19px;
 	vertical-align: top;
 	float: none;
-}
-
-#owned {
-	padding: 3px 0px;
-	background-color: white;
-	text-align: center;
-	max-height: 390px;
-	overflow-y: auto;
 }
 
 #owned .propertycellname {
@@ -273,12 +316,6 @@ td {
 	background-color: white;
 }
 
-#menu {
-	width: 290px;
-	height: 32px;
-	margin: 0px 10px;
-}
-
 #menutable {
 	padding: 0px;
 	text-align: left;
@@ -328,20 +365,8 @@ td {
 #popup {
 	width: 300px;
 	min-width: 300px;
-	font-family: Arial, sans-serif;
-	font-size: 14px;
-	padding: 10px;
-	text-align: center;
-	word-wrap: break-word;
-	line-height: 1.5;
-	border: 2px solid black;
-	border-radius: 10px;
-	background-color: white;
-	display: block;
-	z-index: 13;
 	margin: auto;
-	-webkit-user-select: none;
-	user-select: none;
+    padding: 20px;
 }
 
 #popupwrap {
@@ -553,11 +578,6 @@ td {
 	font-size: 16px;
 }
 
-#enlarge-wrap {
-	border: none;
-	z-index: 0;
-}
-
 .menu-item:hover {
 	/* background-image: -webkit-linear-gradient(bottom,#000080,#4787ED);
 	background-image: -moz-linear-gradient(bottom,#000080,#4787ED); */
@@ -616,6 +636,7 @@ td {
 	vertical-align: bottom;
 	background-repeat: no-repeat;
 	background-size: auto 40px;
+    overflow: hidden;
 }
 
 .board-center {
@@ -627,65 +648,174 @@ td {
 }
 
 .board-corner {
-	width: 102px;
-	height: 102px;
+	height: 120px;
+    width: 120px;
+    background-color: #ffe5b7;
+    background-size: 100% 100%;
+}
+
+.board-side-field {
+    width: 30px;
+}
+
+.board-side-field.enabled {
+    background: white;
 }
 
 .board-top {
-	width: 72px;
-	height: 102px;
+	width: 80px;
+	height: 120px;
 }
 
 .board-bottom {
-	width: 72px;
-	height: 102px;
+	width: 80px;
+	height: 120px;
 }
 
 .board-left {
-	width: 102px;
-	height: 72px;
+	height: 80px;
+	width: 120px;
 }
 
 .board-right {
-	width: 102px;
-	height: 72px;
+	height: 80px;
+	width: 120px;
+}
+
+.cell:before {
+    content: " ";
+    width: 120px;
+    height: 120px;
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 50%;
+}
+
+.cell.board-top:before, .cell.board-top .cell-inner {
+    transform: rotate(180deg);
+}
+    
+.cell.board-left:before, .cell.board-left .cell-inner {
+    transform: rotate(90deg);
+}
+
+.cell.board-right:before, .cell.board-right .cell-inner {
+    transform: rotate(270deg);
+}
+
+.cell.board-bottom:before, .cell.board-bottom .cell-inner {
+}
+
+.cell.board-right:before, .cell.board-left:before {
+    top: -20px;
+    left: 0;
+}
+
+.cell.board-top:before, .cell.board-bottom:before {
+    left: -20px;
+    top: 0;
 }
 
 .enlarge {
-	width: 150px;
-	height: 200px;
-	display: none;
 	background-color: white;
 	border: 2px solid black;
 	text-align: center;
 	font-size: 12px;
 	font-family: arial, sans-serif;
-	position: fixed;
 	z-index: 15;
 }
 
-.enlarge-color {
-	background: white;
-	width: 100%;
-	height: 40px;
+#enlarge {
+    display: none;
+    position: fixed;
 }
 
-.enlarge-name {
-	font-weight: bold;
-	font-size: 20px;
-	background-color: white;
-	height: 45px;
+.enlarge.board-bottom {
+    width: 140px;
+    height: 210px;
 }
 
-.enlarge-price {
-	background-color: white;
-	vertical-align: bottom;
-	height: 25px;
+.enlarge.board-corner {
+    width: 210px;
+    height: 210px;
 }
 
-.enlarge-token {
-	height: 45px;
-	width: 150px;
+.enlarge:before {
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+
+.cell .cell-inner {
+    width: 80px;
+    height: 120px;
+    position: relative;
+}
+
+.cell .cell-card {
+    top: 20%;
+    width: 100%;
+	height: 80%;
+    z-index: 2;
+    position: absolute;
+    color: black;
+    font-weight: normal;
+}
+
+.cell.board-left .cell-inner, .cell.board-right .cell-inner {
+    margin: -20px 20px;
+}
+
+.cell .cell-card > *{
+    display: block;
+}
+
+.cell .cell-card span {
+    font-size: 0.75em;
+    max-width: 80%;
+    margin: 0% auto 2%;
+    cursor: default;
+    font-stretch: extra-condensed;
+}
+
+.cell .cell-card .cell-cat {
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0% auto 5%;
+}
+
+.cell .cell-card > div{
+    margin: 0 3%;
+    overflow: hidden;
+    padding: 0 2%;
+}
+
+.cell .cell-card .cell-goal {
+    float: left;
+}
+
+.cell .cell-card .cell-money {
+    float: right;
+}
+
+.enlarge .cell-inner {
+    width: 100%;
+    height: 100%;
+}
+
+.enlarge .cell-card .cell-cat {
+    font-size: 1.6em;
+    font-weight: bold;
+    text-transform: uppercase;
+    max-width: 90%;
+    margin: 0% auto 5%;
+}
+
+.enlarge .cell-card span {
+    font-size: 1.3em;
 }
 
 .moneybarcell {
@@ -693,18 +823,6 @@ td {
 	min-width: 83px;
 }
 
-.moneybararrowcell {
-	background: white;
-	width: 30px;
-	border: none;
-	text-align: right;
-	padding: 0px;
-}
-
-.money-bar-arrow {
-	height: 30px;
-	width: 30px;
-}
 .propertycellcheckbox {
 	width: 20px;
 	height: 20px;
@@ -774,91 +892,47 @@ td {
 	vertical-align: middle;
 }
 
-.cell-anchor {
-	width: 100%;
-	height: 100%;
-	position: relative;
-	bottom: 0px;
-	left: 0px;
+.chip-dock {
+    position: absolute;
+    bottom: 0px;
+    padding: 5px;
+    transform: rotate(180deg);
 }
 
-.cell-name {
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
-	text-align: center;
-	width: 100%;
+ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::before, #moneybar .party-icon, .player-chip, .cell-owner {
+    margin-right: 5px;
+    border: 1px solid black;
+    width: 15px;
+    height: 15px;
+    border-radius: 2px;
 }
 
-.cell-position-holder {
-	width: 100%;
-	height: 100%;
-	z-index: 1;
-	position: relative;
-}
-
-.cell-position {
-	height: 12px;
-	width: 12px;
-	position: absolute;
-	top: 0px;
-	left: 0px;
+.enlarge .player-chip, .enlarge .cell-owner {
+    width: 34px;
+    height: 34px;
 }
 
 .cell-owner {
-	background-size: cover;
-	display: none;
-	position: absolute;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
 }
 
-.board-top .cell-owner {
-	background-image: url("images/hori-bar.png");
-
-	height: 15px;
-	left: 0px;
-
-
-
-	top: -25px;
-	width: 72px;
-
+.player-chip {
+    float: right;
+    width: 20px;
+    height: 20px;
+    border: 3px solid black !important;
+    border-radius: 20px;
+    box-shadow: #00000080 0px 0px 5px 1px;
 }
 
-.board-bottom .cell-owner {
-	background-image: url("images/hori-bar.png");
-	bottom: -25px;
-
-	height: 15px;
-
-
-
-
-	left: 0px;
-	width: 72px;
+.bill-state-green {
+    background: green;
 }
 
-.board-left .cell-owner {
-	background-image: url("images/vert-bar.png");
-
-	height: 68px;
-	left: -25px;
-
-
-
-	top: 0px;
-	width: 15px;
-
-}
-
-.board-right .cell-owner {
-	background-image: url("images/vert-bar.png");
-
-	height: 68px;
-	right: -25px;
-
-
-
-	top: 0px;
-	width: 15px;
-
+.bill-state-yellow {
+    background: yellow;
 }
