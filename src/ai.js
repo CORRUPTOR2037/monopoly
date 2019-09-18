@@ -17,7 +17,7 @@ function AITest(p) {
 	this.buyProperty = function(index) {
 		var s = square[index];
 
-		if (p.money > s.price() + 50) {
+		if (p.money > s.price().buy + 50) {
 			return true;
 		} else {
 			return false;
@@ -32,7 +32,7 @@ function AITest(p) {
 	this.acceptTrade = function(tradeObj) {
 		console.log("acceptTrade");
 
-		var tradeValue = 0;
+		/*var tradeValue = 0;
 		var money = tradeObj.getMoney();
 		var initiator = tradeObj.getInitiator();
 		var recipient = tradeObj.getRecipient();
@@ -59,13 +59,14 @@ function AITest(p) {
 			return new Trade(initiator, recipient, proposedMoney, property, tradeObj.getCommunityChestJailCard(), tradeObj.getChanceJailCard());
 		}
 
-		return false;
+		return false;*/
 	}
 
 	// This function is called at the beginning of the AI's turn, before any dice are rolled. The purpose is to allow the AI to manage property and/or initiate trades.
 	// Return: boolean: Must return true if and only if the AI proposed a trade.
 	this.beforeTurn = function() {
 		console.log("beforeTurn");
+		/*
 		var s;
 		var allGroupOwned;
 		var max;
@@ -114,7 +115,7 @@ function AITest(p) {
 			}
 		}
 
-		return false;
+		return false;*/
 	}
 
 	var utilityForRailroadFlag = true; // Don't offer this trade more than once.
@@ -123,8 +124,9 @@ function AITest(p) {
 	// This function is called every time the AI lands on a square. The purpose is to allow the AI to manage property and/or initiate trades.
 	// Return: boolean: Must return true if and only if the AI proposed a trade.
 	this.onLand = function() {
+		console.trace();
 		console.log("onLand");
-		var proposedTrade;
+		/*var proposedTrade;
 		var property = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		var railroadIndexes = [5, 15, 25, 35];
 		var requestedRailroad;
@@ -158,7 +160,7 @@ function AITest(p) {
 			return true;
 		}
 
-		return false;
+		return false;*/
 	}
 
 	// Determine whether to post bail/use get out of jail free card (if in possession).
@@ -167,18 +169,18 @@ function AITest(p) {
 		console.log("postBail");
 
 		// p.jailroll === 2 on third turn in jail.
-		if ((p.communityChestJailCard || p.chanceJailCard) && p.jailroll === 2) {
+		/*if ((p.communityChestJailCard || p.chanceJailCard) && p.jailroll === 2) {
 			return true;
 		} else {
 			return false;
-		}
+		}*/
 	}
 
 	// Mortgage enough properties to pay debt.
 	// Return: void: don't return anything, just call the functions mortgage()/sellhouse()
 	this.payDebt = function() {
 		console.log("payDebt");
-		for (var i = 39; i >= 0; i--) {
+		/*for (var i = 39; i >= 0; i--) {
 			s = square[i];
 
 			if (s.owner === p.index && !s.mortgage && s.house === 0) {
@@ -189,20 +191,20 @@ function AITest(p) {
 			if (p.money >= 0) {
 				return;
 			}
-		}
+		}*/
 
 	}
 
 	// Determine what to bid during an auction.
-	// Return: integer: -1 for exit auction, 0 for pass, a positive value for the bid.
+	// Return: integer: 0 for pass, a positive value for the bid.
 	this.bid = function(property, currentBid) {
-		console.log("bid");
+		
+		if (Math.random() > 0.8)  return 0;
+
 		var bid;
-
-		bid = currentBid + Math.round(Math.random() * 20 + 10);
-
-		if (p.money < bid + 50 || bid > square[property].price * 1.5) {
-			return -1;
+		bid = currentBid + Math.round(Math.random() * property.price().buy + 1);
+		if (p.money < bid + 50 || bid > property.price().buy * 5) {
+			return 0;
 		} else {
 			return bid;
 		}

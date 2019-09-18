@@ -62,19 +62,22 @@ body {
 	border-radius: 1px;
 }
 	
+#moneybarwrap {
+    float: left;
+	left: -20px;
+    position: absolute;
+    width: 0px;
+}
 #moneybar {
-	float: right;
-	margin: 15px;
 	border-radius: 5px;
 	display: none;
-	z-index: 14;
-	position: absolute;
 	cursor: default;
 	-webkit-user-select: none;
 	user-select: none;
-    top: 0;
-    right: 0;
     color: black;
+    position: absolute;
+    width: 160px;
+    left: -170px;
 }
 
 #moneybar table {
@@ -86,15 +89,6 @@ body {
     border: 1px solid black;
     font-size: 1.1em;
     text-align: center;
-}
-
-#moneybarwrap {
-	position: absolute;
-	min-width: 135px;
-	top: 0px;
-	right: 0px;
-	-webkit-user-select: none;
-	user-select: none;
 }
 
 #propertystats {
@@ -146,7 +140,6 @@ body {
 }
 #control table {
     display: inline-block;
-    min-height: 215px;
 }
 
 #control #control-enlarge-wrap {
@@ -170,13 +163,18 @@ body {
     vertical-align: top;
 }
 
-#quickstats, .moneybarcell, #owned, #landed {
+#quickstats, .moneybarcell, #owned, #landed, .statscell  {
     background: #363636;
     border: 1px solid #626262;
     border-radius: 2px;
     color: white;
     padding: 4px;
 }
+
+#quickstats {
+    width: 78px;
+}
+
 #owned {
     width: 300px;
     height: 16px;
@@ -187,7 +185,7 @@ body {
     color: black;
 }
 
-#control button {
+#control button, #popup button {
     width: 88px;
     background: linear-gradient(to bottom, #3e4c7b, #2b2f3f);
     border: 2px solid #34353b;
@@ -200,11 +198,19 @@ body {
     margin-right: 0px;
 }
 
-#control button:hover {
+#control button:hover, #popup button:hover {
     background: #aaa;
+    cursor: pointer;
 }
 
-#alert {
+#control div {
+    -webkit-user-select: none; /* Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+
+#game-log {
 	width: 307px;
 	height: 92px;
 	margin: 0px;
@@ -215,6 +221,13 @@ body {
 	font-size: 13px;
 	background-color: #FFFFFF;
 	overflow-y: scroll;
+}
+
+#game-log .gain {
+    color: green;
+}
+#game-log .loss {
+    color: red;
 }
 
 #manage {
@@ -340,6 +353,9 @@ body {
 	vertical-align: top;
 }
 
+#menu {
+    display: inline-block;
+}
 #menu a {
 	color: #FFFFFF;
 	text-decoration: none;
@@ -367,6 +383,8 @@ body {
 	min-width: 300px;
 	margin: auto;
     padding: 20px;
+    top: 0px;
+    left: 0px;
 }
 
 #popupwrap {
@@ -381,8 +399,13 @@ body {
 	user-select: none;
 }
 
-#popuptext {
+#popup-text {
 	overflow-x: auto;
+    text-align: center;
+}
+
+#popup-text div > *  {
+	margin: 5px;
 }
 
 /* #popupclose {
@@ -431,13 +454,9 @@ body {
 	min-width: 454px;
 	font-family: Arial, sans-serif;
 	font-size: 14px;
-	padding: 10px;
-	text-align: center;
+    font-weight: normal;
 	word-wrap: break-word;
 	line-height: 1.5;
-	border: 2px solid black;
-	border-radius: 10px;
-	background-color: white;
 	display: block;
 	z-index: 17;
 	margin: auto;
@@ -462,6 +481,11 @@ body {
 #statstext {
 	overflow: hidden;
 	min-height: 70px;
+}
+
+#statstext table {
+    margin: 0;
+    width: 100%;
 }
 
 #statsclose {
@@ -602,7 +626,7 @@ body {
 
 .die {
 	display: none;
-	margin: 5px;
+	margin: 0px 3px;
 	float: left;
 }
 
@@ -637,6 +661,49 @@ body {
 	background-repeat: no-repeat;
 	background-size: auto 40px;
     overflow: hidden;
+}
+
+.cell-amandments {
+    color: white;
+    float: right;
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    border: 1px solid #626262;
+    border-radius: 2px;
+    background: #36363680;
+    padding: 0px 3px;
+    background-repeat: no-repeat;
+    background-position-x: right;
+    cursor: default;
+    -webkit-user-select: none;
+	user-select: none;
+    font-size: 13px;
+    display: none;
+}
+
+.cell-amandments.up .cell-rating {
+    background-image: url("images/ratingUp.png");
+}
+.cell-amandments.down .cell-rating  {
+    background-image: url("images/ratingDown.png");
+}
+.cell-amandments.neutral .cell-rating  {
+    background-image: url("images/ratingNeutral.png");
+}
+.cell-amandments .cell-paper  {
+    background-image: url("images/paperIcon.png");
+}
+
+.cell-amandments span {
+    height: 13px;
+    width: 35px;
+    display: inline-block;
+    background-size: 13px 13px;
+    margin: 2px;
+    padding-left: 15px;
+    background-repeat: no-repeat;
+    float:left;
 }
 
 .board-center {
@@ -773,11 +840,17 @@ body {
 }
 
 .cell .cell-card span {
-    font-size: 0.75em;
-    max-width: 80%;
+    font-size: 11px;
     margin: 0% auto 2%;
     cursor: default;
     font-stretch: extra-condensed;
+}
+
+.cell .cell-card .cell-goal {
+    max-width: 70%;
+}
+.cell .cell-card .cell-money {
+    max-width: 30%;
 }
 
 .cell .cell-card .cell-cat {
@@ -818,9 +891,12 @@ body {
     font-size: 1.3em;
 }
 
+.enlarge .cell-amandments {
+    display: block;
+}
+
 .moneybarcell {
-	width: 83px;
-	min-width: 83px;
+	width: 100%;
 }
 
 .propertycellcheckbox {
@@ -863,25 +939,27 @@ body {
 	border: none;
 }
 
-.statscellname {
-	height: 20px;
-	border: none;
-	cursor: default;
-	text-align: left;
-	min-width: 172px;
+.statscell {
+    padding-left: 10px;
+    text-align: left;
+    padding-bottom: 10px;
+    font-weight: 
+}
+
+.statscellheader {
+	margin-top: 6px;
+    display: block;
+    font-weight: bold;
+}
+
+.statscell ul {
+    margin: 0px;
 }
 
 .statsplayername {
 	font-weight: bold;
+    text-align: left;
 	font-size: 24px;
-}
-
-.statscell {
-	border: 2px solid black;
-	padding: 8px;
-	vertical-align: top;
-	width: 202px;
-	min-width: 115px;
 }
 
 .trade-cell {
@@ -897,14 +975,16 @@ body {
     bottom: 0px;
     padding: 5px;
     transform: rotate(180deg);
+    z-index: 5;
 }
 
-ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::before, #moneybar .party-icon, .player-chip, .cell-owner {
+ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::before, .party-icon, .player-chip, .cell-owner {
     margin-right: 5px;
     border: 1px solid black;
     width: 15px;
     height: 15px;
     border-radius: 2px;
+    display: inline-block;
 }
 
 .enlarge .player-chip, .enlarge .cell-owner {
@@ -930,9 +1010,21 @@ ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::befo
 }
 
 .bill-state-green {
-    background: green;
+    background: #0d0;
 }
 
 .bill-state-yellow {
     background: yellow;
+}
+
+.cell-spec {
+    bottom: 0px;
+    position: absolute;
+    width: 100%;
+    margin: 0 !important;
+}
+
+.cell-spec.active {
+    height: 7px;
+    background: #00ffbf;
 }

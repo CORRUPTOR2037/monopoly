@@ -19,7 +19,7 @@
 }
 
 .cell.human-rights:before {
-    background: linear-gradient(to top, white 80%, #ff0a0a 80%);
+    background: linear-gradient(to top, white 80%, #ff0076 80%);
 }
 .cell.piar:before {
     background: linear-gradient(to top, white 80%, #444 80%);
@@ -29,7 +29,7 @@
     background: linear-gradient(to top, white 80%, #ff80bf 80%);
 }
 .cell.law:before {
-    background: linear-gradient(to top, white 80%, #f0ff5e 80%);
+    background: linear-gradient(to top, white 80%, #ff0a0a 80%);
 }
 .cell.taxes:before {
     background: linear-gradient(to top, white 80%, #007209 80%);

@@ -1,34 +1,40 @@
-function Square(name, onVisit, style) {
+function Square(name, style) {
 	this.name = name;
-	this.onVisit = onVisit;
 	this.style = style;
+	
+	this.uiName = getString(style);
 }
-function Bill(name, groupNumber, prices) {
+function Bill(name, groupNumber, prices, sides) {
 	group = groups[groupNumber];
 	
 	this.name = name;
-	this.onVisit = landOnBill;
 	this.style = group.style;
 	this.group = group;
 	this.owner = undefined;
 	
 	this.state = 0;
 	this.amendments = 0;
+	this.direction = 0;
 	
 	this.prices = prices;
 	
-	var self = this;
-	this.price = function(){ return self.prices[self.state]; }
+	this.sides = sides;
+	for (var i = 0; i < sides.length; i++) {
+        this.sides[i] = "buy-side-" + this.sides[i];
+    }
 	
-	this.acceptPropose = function(player){
-		self.state++;
-	};
-	this.refusPropose = function(){
-		game.addPropertyToAuctionQueue(self);
+	this.uiName = getString(this.style) + ": " + getString(this.name)
+	
+	this.price = function(){ return this.prices[this.state]; }
+	
+	this.refusePropose = function(){
+		if (this.state == 0) {
+            makeAuction(this);
+        }
 	};
 	
 	this.moveState = function(){
-		self.state++;
+		this.state++;
 	};
 }
 function Price(buy, visit) {
@@ -38,12 +44,6 @@ function Price(buy, visit) {
 function Card(text, action) {
 	this.text = text;
 	this.action = action;
-}
-
-function Visit(text, set_args, add_args) {
-    this.text = text;
-	this.set_args = set_args;
-	this.add_args = add_args;
 }
 
 function corrections() {
@@ -70,20 +70,21 @@ function luxurytax() {
 	addAlert(player[turn].name + " paid $100 for landing on Luxury Tax.");
 	player[turn].pay(100, 0);
 
-	$("#landed").show().text("You landed on Luxury Tax. Pay $100.");
+	landedPanel.show("You landed on Luxury Tax. Pay $100.");
 }
 
 function citytax() {
 	addAlert(player[turn].name + " paid $200 for landing on City Tax.");
 	player[turn].pay(200, 0);
 
-	$("#landed").show().text("You landed on City Tax. Pay $200.");
+	landedPanel.show("You landed on City Tax. Pay $200.");
 }
 
 function Group(name) {
     this.name = name;
 	this.style = name;
 }
+Group.prototype.toString = function(){return '"' + this.name + '" group' ;};
 
 var square = [];
 squareSize = [17, 9];
@@ -104,214 +105,149 @@ var groups = [
 	new Group("piar")
 ]
 
-function addCommunityCard(square, player) {
-    if (!p.human) {
-		popup(p.AI.alertList, chanceCommunityChest);
-		p.AI.alertList = "";
-	} else {
-		chanceCommunityChest();
-	}
-}
-function lobby(square, player) {
-    
-}
-function chance(square, player) {
-    
-}
-function corruption_visit(square, player) {
-    
-}
-function corruption_take(square, player) {
-    updateMoney();
-	updatePosition();
-
-	if (p.human) {
-		popup("<div>Go to jail. Go directly to Jail. Do not pass GO. Do not collect $200.</div>", goToJail);
-	} else {
-		gotojail();
-	}
-}
-function meeting(square, player) {
-
-}
-function vacation(square, player) {
-
-}
-function scandal(square, player) {
-
-}
-
-function landOnBill(square, player) {
-    // Allow player to buy the property on which he landed.
-	if (square.price !== 0 && square.state == 0) {
-		if (!player.human) {
-			if (player.AI.buyProperty(p.position)) {
-				square.acceptPropose(player);
-			} else {
-				square.refusePropose();
-			}
-		} else {
-			updateOptions(["buy"]);
-		}
-	}
-
-	/*// Collect rent
-	if (s.price !== 0 && s.state > 0 && s.owner != turn) {
-		var rent = s.price().visit;
-
-		addAlert(p.name + getString("amended-to") + getString(s.name) + ".");
-		p.pay(s.price().visit);
-
-		document.getElementById("landed").innerHTML = "You landed on " + s.name + ". " + player[s.owner].name + " collected $" + rent + " rent.";
-	} else if (s.owner > 0 && s.owner != turn && s.mortgage) {
-		document.getElementById("landed").innerHTML = "You landed on " + s.name + ". Property is mortgaged; no rent was collected.";
-	}*/
-}
-
-
-square[0] = new Square("new-session", new Visit("new-session-collect", {'energy': 100}, {'money':100}), "new-session");
+square[0] = new Square("new-session", "new-session");
 
 square[1] = new Bill("self-gov-rights", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[2] = new Bill("self-gov-budget", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[3] = new Bill("self-gov-elections", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 
-square[4] = new Square("com-chest1", addCommunityCard, "com-chest");
+square[4] = new Square("com-chest1", "com-chest");
 
 square[5] = new Bill("taxes-public-utility", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["decrease", "increase"]);
 square[6] = new Bill("taxes-self-employment", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["decrease", "increase"]);
 square[7] = new Bill("taxes-indirect", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["decrease", "increase"]);
 
-square[8] = new Square("lobby1", lobby, "lobby");
+square[8] = new Square("lobby1", "lobby");
 
 square[9] = new Bill("law-administrative", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 square[10] = new Bill("law-criminal", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 square[11] = new Bill("law-procedural", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 
-square[12] = new Square("chance1", chance, "chance");
+square[12] = new Square("chance1", "chance");
 
 square[13] = new Bill("speech-assembly", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[14] = new Bill("speech-press", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[15] = new Bill("speech-internet", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 
-square[16] = new Square("jail", corruption_visit, "jail");
+square[16] = new Square("jail", "jail");
 
 square[17] = new Bill("monopoly-taxes", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[18] = new Bill("monopoly-privileges", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[19] = new Bill("monopoly-control", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["strengthen", "ease"]);
 
-square[20] = new Square("meeting1", meeting, "meeting");
+square[20] = new Square("meeting1", "meeting");
 
 square[21] = new Bill("business-taxes", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["decrease", "increase"]);
 square[22] = new Bill("business-supervision", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 square[23] = new Bill("business-easy-doing", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 
-square[24] = new Square("vacation", vacation, "vacation");
+square[24] = new Square("vacation", "vacation");
 
 square[25] = new Bill("elections-enter", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 square[26] = new Bill("elections-parties", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 square[27] = new Bill("elections-procedures", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 
-square[28] = new Square("com-chest3", addCommunityCard, "com-chest");
+square[28] = new Square("com-chest3", "com-chest");
 
 square[29] = new Bill("privacy-data", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["increase", "decrease"]);
 square[30] = new Bill("privacy-physical", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["decrease", "increase"]);
 square[31] = new Bill("privacy-registry", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["decrease", "increase"]);
 
-square[32] = new Square("lobby2", lobby, "lobby");
+square[32] = new Square("lobby2", "lobby");
 
 square[33] = new Bill("ecology-garbage", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
-square[34] = new Bill("ecology-gas-exhaust", 8, [
+], ["ease", "strengthen"]);
+square[34] = new Bill("ecology-exhaust", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
-square[35] = new Bill("ecology-animals", 8, [
+], ["strengthen", "ease"]);
+square[35] = new Bill("ecology-forest", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["strengthen", "ease"]);
 
-square[36] = new Square("chance3", chance, "chance");
+square[36] = new Square("chance3", "chance");
 
 square[37] = new Bill("foreign-invest-npo", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 square[38] = new Bill("foreign-invest-media", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 square[39] = new Bill("foreign-invest-commerse", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 
-square[40] = new Square("scandal", scandal, "scandal");
+square[40] = new Square("scandal", "scandal");
 
 square[41] = new Bill("human-rights-movement", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 square[42] = new Bill("human-rights-self-defence", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["ease", "strengthen"]);
 square[43] = new Bill("human-rights-trade", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["simplify", "complicate"]);
 
-square[44] = new Square("meeting2", meeting, "meeting");
+square[44] = new Square("meeting2", "meeting");
 
 square[45] = new Bill("piar-ban", 11, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["amend"]);
 square[46] = new Bill("piar-rename", 11, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["amend"]);
 square[47] = new Bill("piar-create", 11, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-]);
+], ["amend"]);
 
 var communityChestCards = [];
 var chanceCards = [];
@@ -352,35 +288,64 @@ chanceCards[14] = new Card("ADVANCE to St. Charles Place. If you pass \"GO\" col
 chanceCards[15] = new Card("Go to Jail. Go Directly to Jail. Do not pass \"GO\". Do not collect $200.", function() { gotojail();});
 
 
-function Party(text, difficulty) {
+function Party(text, difficulty, groupsReaction, specialization) {
     this.text = text;
 	this.style = "russian-party " + text;
 	this.difficulty = difficulty;
 	this.bonus = 0.2;
+	this.groupsReaction = {};
+	for (var i = 0; i < groups.length; i++) {
+        this.groupsReaction[groups[i].name] = groupsReaction[i];
+    }
+	this.specialization = [];
+	for (var i = 0; i < specialization.length; i++) {
+        this.specialization.push(groups[specialization[i]]);
+    }
+	
+	
+	switch (difficulty) {
+        case 1: {
+			this.partyFee = 20;
+		} break;
+		case 2: {
+			this.partyFee = 50;
+		} break;
+		case 3: {
+			this.partyFee = 100;
+		} break;
+		case 4: {
+			this.partyFee = 200;
+		} break;
+		case 5: {
+			this.partyFee = 300;
+		} break;
+    }
 }
 
 var players = [];
 
-players[0] = new Party("conservative", 1);
-players[1] = new Party("communist", 2);
-players[2] = new Party("populist", 2);
-players[3] = new Party("socialist", 3);
-players[4] = new Party("traditionalist", 3);
-players[5] = new Party("economist", 3);
-players[6] = new Party("democrat", 3);
-players[7] = new Party("liberal", 4);
-players[8] = new Party("green", 4);
-players[9] = new Party("monarchist", 4);
-players[10] = new Party("right", 4);
-players[11] = new Party("pirate", 4);
-players[12] = new Party("ultraconservative", 4);
-players[13] = new Party("progressivist", 5);
-players[14] = new Party("nationalist", 5);
-players[15] = new Party("libertartian", 5);
-players[16] = new Party("marxist", 5);
+players[0]  = new Party("conservative",      1, [-1, -1, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [1,2,3,4,6]);
+players[1]  = new Party("communist",         2, [-1,  1, -1, -1,    1, -1,    1, -1,  1, -1,   -1, -1], [1,4,5,10]);
+players[2]  = new Party("populist",          2, [ 1,  1, -1, -1,    1,  1,    1, -1,  1, -1,    1,  1], [0,1,2,11]);
+players[3]  = new Party("socialist",         3, [ 1, -1, -1,  1,   -1,  1,   -1, -1,  1, -1,    1,  1], [6,7,10]);
+players[4]  = new Party("traditionalist",    3, [-1, -1, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [2,3,4]);
+players[5]  = new Party("economist",         3, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [1,5,9]);
+players[6]  = new Party("democrat",          3, [ 1,  1,  1,  1,    1, -1,    1,  1,  1,  1,    1,  1], [0,3,6]);
+players[7]  = new Party("liberal",           4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [3,10]);
+players[8]  = new Party("green",             4, [ 1, -1, -1,  1,    1, -1,    1,  1,  1,  1,    1, -1], [5,8]);
+players[9]  = new Party("monarchist",        4, [-1, -1, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [3,7]);
+players[10] = new Party("right",             4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [5,9]);
+players[11] = new Party("pirate",            4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [2,7]);
+players[12] = new Party("ultraconservative", 4, [-1,  1, -1, -1,    1, -1,   -1, -1,  1, -1,   -1,  1], [3,7]);
+players[13] = new Party("progressivist",     5, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1,  1], [4]);
+players[14] = new Party("nationalist",       5, [ 1,  1,  1,  1,   -1, -1,    1,  1,  1, -1,    1,  1], [10]);
+players[15] = new Party("libertartian",      5, [ 1,  1,  1,  1,    1,  1,    1,  1, -1,  1,    1,  1], [5]);
+players[16] = new Party("marxist",           5, [-1,  1,  1,  1,    1,  1,    1, -1,  1, -1,    1, -1], [3]);
 
 var difficultiesNames = ['easy', 'normal', 'hard', 'very hard', 'impossible']
 
 var startPayment = 450;
 
 var moneySign = ["", "к Р"];
+
+var lobbyTypes = ['interior', 'monopoly', 'local', 'business'];

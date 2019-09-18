@@ -1,249 +1,38 @@
 function GameState() {
+	
+	// Dices state
+	
 	var die1, die2;
 	var areDiceRolled = false;
-
-	var auctionQueue = [];
-	var highestbidder;
-	var highestbid;
-	var currentbidder = 1;
-	var auctionproperty;
+	var doublecount = 0;
 
 	this.rollDice = function() {
 		die1 = Math.floor(Math.random() * 6) + 1;
 		die2 = Math.floor(Math.random() * 6) + 1;
 		areDiceRolled = true;
+		if (die1 == die2) {
+            doublecount++;
+        } else {
+			doublecount = 0;
+		}
 	};
 
 	this.resetDice = function() {
 		areDiceRolled = false;
+		doublecount = 0;
 	};
 
-	this.next = function() {
-		if (!p.human && p.money < 0) {
-			p.AI.payDebt();
-
-			if (p.money < 0) {
-				popup("<p>" + p.name + " is bankrupt. All of its assets will be turned over to " + player[p.creditor].name + ".</p>", game.bankruptcy);
-			} else {
-				roll();
-			}
-		} else if (areDiceRolled && doublecount === 0) {
-			play();
-		} else {
-			roll();
-		}
+	this.shouldEndTurn = function(){
+		return (areDiceRolled && doublecount === 0);
 	};
 
 	this.getDie = function(die) {
 		if (die === 1) {
-
 			return die1;
 		} else {
-
 			return die2;
 		}
-
 	};
-
-
-
-	// Auction functions:
-
-
-
-	var finalizeAuction = function() {
-		var p = player[highestbidder];
-		var sq = square[auctionproperty];
-
-		if (highestbid > 0) {
-			p.pay(highestbid, 0);
-			sq.owner = highestbidder;
-			addAlert(p.name + " bought " + sq.name + " for $" + highestbid + ".");
-		}
-
-		for (var i = 1; i <= pcount; i++) {
-			player[i].bidding = true;
-		}
-
-		$("#popupbackground").hide();
-		$("#popupwrap").hide();
-
-		if (!game.auction()) {
-			play();
-		}
-	};
-
-	this.addPropertyToAuctionQueue = function(propertyIndex) {
-		auctionQueue.push(propertyIndex);
-	};
-
-	this.auction = function() {
-		if (auctionQueue.length === 0) {
-			return false;
-		}
-
-		index = auctionQueue.shift();
-
-		var s = square[index];
-
-		if (s.price === 0 || s.owner !== 0) {
-			return game.auction();
-		}
-
-		auctionproperty = index;
-		highestbidder = 0;
-		highestbid = 0;
-		currentbidder = turn + 1;
-
-		if (currentbidder > pcount) {
-			currentbidder -= pcount;
-		}
-
-		popup("<div style='font-weight: bold; font-size: 16px; margin-bottom: 10px;'>Auction <span id='propertyname'></span></div><div>Highest Bid = $<span id='highestbid'></span> (<span id='highestbidder'></span>)</div><div><span id='currentbidder'></span>, it is your turn to bid.</div<div><input id='bid' title='Enter an amount to bid on " + s.name + ".' style='width: 291px;' /></div><div><input type='button' value='Bid' onclick='game.auctionBid();' title='Place your bid.' /><input type='button' value='Pass' title='Skip bidding this time.' onclick='game.auctionPass();' /><input type='button' value='Exit Auction' title='Stop bidding on " + s.name + " altogether.' onclick='if (confirm(\"Are you sure you want to stop bidding on this property altogether?\")) game.auctionExit();' /></div>", "blank");
-
-		document.getElementById("propertyname").innerHTML = "<a href='javascript:void(0);' onmouseover='showdeed(" + auctionproperty + ");' onmouseout='hidedeed();' class='statscellcolor'>" + s.name + "</a>";
-		document.getElementById("highestbid").innerHTML = "0";
-		document.getElementById("highestbidder").innerHTML = "N/A";
-		document.getElementById("currentbidder").innerHTML = player[currentbidder].name;
-		document.getElementById("bid").onkeydown = function (e) {
-			var key = 0;
-			var isCtrl = false;
-			var isShift = false;
-
-			if (window.event) {
-				key = window.event.keyCode;
-				isCtrl = window.event.ctrlKey;
-				isShift = window.event.shiftKey;
-			} else if (e) {
-				key = e.keyCode;
-				isCtrl = e.ctrlKey;
-				isShift = e.shiftKey;
-			}
-
-			if (isNaN(key)) {
-				return true;
-			}
-
-			if (key === 13) {
-				game.auctionBid();
-				return false;
-			}
-
-			// Allow backspace, tab, delete, arrow keys, or if control was pressed, respectively.
-			if (key === 8 || key === 9 || key === 46 || (key >= 35 && key <= 40) || isCtrl) {
-				return true;
-			}
-
-			if (isShift) {
-				return false;
-			}
-
-			// Only allow number keys.
-			return (key >= 48 && key <= 57) || (key >= 96 && key <= 105);
-		};
-
-		document.getElementById("bid").onfocus = function () {
-			this.style.color = "black";
-			if (isNaN(this.value)) {
-				this.value = "";
-			}
-		};
-
-		updateMoney();
-
-		if (!player[currentbidder].human) {
-			currentbidder = turn; // auctionPass advances currentbidder.
-			this.auctionPass();
-		}
-		return true;
-	};
-
-	this.auctionPass = function() {
-		if (highestbidder === 0) {
-			highestbidder = currentbidder;
-		}
-
-		while (true) {
-			currentbidder++;
-
-			if (currentbidder > pcount) {
-				currentbidder -= pcount;
-			}
-
-			if (currentbidder == highestbidder) {
-				finalizeAuction();
-				return;
-			} else if (player[currentbidder].bidding) {
-				var p = player[currentbidder];
-
-				if (!p.human) {
-					var bid = p.AI.bid(auctionproperty, highestbid);
-
-					if (bid === -1 || highestbid >= p.money) {
-						p.bidding = false;
-
-						window.alert(p.name + " exited the auction.");
-						continue;
-
-					} else if (bid === 0) {
-						window.alert(p.name + " passed.");
-						continue;
-
-					} else if (bid > 0) {
-						this.auctionBid(bid);
-						window.alert(p.name + " bid $" + bid + ".");
-						continue;
-					}
-					return;
-				} else {
-					break;
-				}
-			}
-
-		}
-
-		document.getElementById("currentbidder").innerHTML = player[currentbidder].name;
-		document.getElementById("bid").value = "";
-		document.getElementById("bid").style.color = "black";
-	};
-
-	this.auctionBid = function(bid) {
-		bid = bid || parseInt(document.getElementById("bid").value, 10);
-
-		if (bid === "" || bid === null) {
-			document.getElementById("bid").value = "Please enter a bid.";
-			document.getElementById("bid").style.color = "red";
-		} else if (isNaN(bid)) {
-			document.getElementById("bid").value = "Your bid must be a number.";
-			document.getElementById("bid").style.color = "red";
-		} else {
-
-			if (bid > player[currentbidder].money) {
-				document.getElementById("bid").value = "You don't have enough money to bid $" + bid + ".";
-				document.getElementById("bid").style.color = "red";
-			} else if (bid > highestbid) {
-				highestbid = bid;
-				document.getElementById("highestbid").innerHTML = parseInt(bid, 10);
-				highestbidder = currentbidder;
-				document.getElementById("highestbidder").innerHTML = player[highestbidder].name;
-
-				document.getElementById("bid").focus();
-
-				if (player[currentbidder].human) {
-					this.auctionPass();
-				}
-			} else {
-				document.getElementById("bid").value = "Your bid must be greater than highest bid. ($" + highestbid + ")";
-				document.getElementById("bid").style.color = "red";
-			}
-		}
-	};
-
-	this.auctionExit = function() {
-		player[currentbidder].bidding = false;
-		this.auctionPass();
-	};
-
 
 
 	// Trade functions:

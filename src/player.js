@@ -10,12 +10,12 @@ function Player(name, party, isAI) {
 	this.chanceJailCard = false;
 	this.bidding = true;
 	this.human = !isAI;
+	this.lobby = {};
 	if (isAI) this.AI = new AITest(this);
 	
-	self = this;
 	this.pay = function(amount){
-		self.money -= amount;
-		if (self.money < -startPayment) {
+		this.money -= amount;
+		if (this.money < -startPayment) {
             bankrupt(this);
         }
 		updateMoney();
@@ -28,4 +28,9 @@ function Player(name, party, isAI) {
 	
 	this.chip = document.createElement('div');
 	this.chip.className = 'player-chip ' + this.style;
+	
+	let lobby = this.lobby;
+	lobbyTypes.forEach(function(t){
+		lobby[t] = 0;
+	});
 }

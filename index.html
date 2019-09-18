@@ -25,7 +25,7 @@
 		<div id="popup" class="panel">
 			<div style="position: relative;">
 				<!-- <img id="popupclose" src="Images/close.png" title="Close" alt="x" onclick="hide('popupbackground'); hide('popupwrap');" /> -->
-				<div id="popuptext"></div>
+				<div id="popup-text"></div>
 				<div id="popupdrag"></div>
 			</div>
 		</div>
@@ -33,7 +33,7 @@
 
 	<div id="statsbackground"></div>
 	<div id="statswrap">
-		<div id="stats">
+		<div class="panel" id="stats">
 			<div style="position: relative;">
 				<img id="statsclose" src="images/close.png" title="Close" alt="x" />
 				<div id="statstext"></div>
@@ -114,60 +114,60 @@
 			})
 		</script>
 	</div>
-	
-	<div id="moneybar" class="panel">
-			<table>
+	<div id="control">
+		<div id="moneybarwrap">
+			<div id="moneybar" class="panel">
+			<table style="width: 100%">
 				<tr>
-					<td style="border: none;" class="moneybararrowcell">&nbsp;</td>
-					<td style="border: none;">
-						<input type="button" id="viewstats" value="View stats" title="View a pop-up window that shows a list of each player's properties." />
+					<td style="border: none; text-align: center;" class="moneybararrowcell" colspan="2">
+						<button class="localized-string" id="viewstats" style="width: auto;">View stats</button>
 					</td>
 				</tr>
 			</table>
 		</div>
-	
-	<div id="control">
+		</div>
 		<table class="panel"><tbody>
-		<tr>
-			<td>
-				<div id="owned"></div>
-			</td>
-			<td style="vertical-align: top; border: none;" rowspan="2">
-					<div id="quickstats" style="">
-							<div><span id="pname" >Player 1</span>:</div>
-							<div><span id="pmoney">$1500</span></div>
+			<tr>
+				<td>
+					<div id="owned"></div>
+				</td>
+				<td style="vertical-align: top; border: none;" rowspan="2">
+						<div id="quickstats" style="">
+								<div><span id="main-player-name" >Player 1</span>:</div>
+						</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="landed"></div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div id="menu">
+						<button class="menu-item localized-string" id="buy-menu-item" onclick="buyChooseSide()">Buy</button>
+						<button class="menu-item localized-string" id="pass-menu-item" onclick="passBuy()">Pass</button>
+						<button class="menu-item localized-string" id="amend-menu-item" onclick="amend()">Amend</button>
+						<button class="menu-item localized-string" id="move-menu-item" onclick="move()">Move</button>
+						<button class="menu-item localized-string" id="take-menu-item">Take</button>
+						<button class="menu-item localized-string" id="visit-menu-item">Visit</button>
 					</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div id="landed"></div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div id="menu">
-					<button class="menu-item localized-string" id="buy-menu-item" onclick="buy()">Buy</button>
-					<button class="menu-item localized-string" id="pass-menu-item">Pass</button>
-					<button class="menu-item localized-string" id="amend-menu-item">Amend</button>
-					<button class="menu-item localized-string" id="take-menu-item">Take</button>
-					<button class="menu-item localized-string" id="visit-menu-item">Visit</button>
-				</div>
-			</td>
-			<td>
-				<button id="roll-dices" onclick="roll();" class="localized-string" title="Roll dices and move your token accordingly." >Roll dices</button>
-				<div>
-					<div id="die0" title="Die" class="die die-no-img"></div>
-					<div id="die1" title="Die" class="die die-no-img"></div>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<div id="alert"></div>
-				
-			</td>
-		</tr>
+					<div style="float: right;">
+						<div id="die0" title="Die" class="die die-no-img"></div>
+						<div id="die1" title="Die" class="die die-no-img"></div>
+					</div>
+				</td>
+				<td>
+					<button id="roll-dices" onclick="roll();" class="localized-string" title="Roll dices and move your token accordingly." >Roll dices</button>
+					<button id="end-turn" onclick="play();" class="localized-string" title="End turn of current player">End turn</button>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<div id="game-log"></div>
+					
+				</td>
+			</tr>
 		</tbody></table>
 		<div id="control-enlarge-wrap">
 			<div class="enlarge" id="control-enlarge"></div>
