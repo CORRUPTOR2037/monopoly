@@ -46,6 +46,32 @@ function Card(text, action) {
 	this.action = action;
 }
 
+function MoneyCard(index) {
+	this.text = "money-card" + index;
+	this.action = function(player) {
+		player.money += 10 * Math.range(1, 20);
+	}
+}
+function TicketCard(name, index) {
+	this.text = "ticket-card-" + name + index;
+	this.ticketName = name;
+	this.action = function(player) {
+		player.addTicket(this.ticketName);
+	}
+}
+function AssemblyRatingCard(index) {
+	this.text = "assembly-rating-card" + index;
+	this.action = function(player) {
+		player.assemblyRating += Math.range(1, 10);
+	}
+}
+function PeopleRatingCard(index) {
+	this.text = "assembly-rating-card" + index;
+	this.action = function(player) {
+		player.peopleRating += Math.range(1, 10);
+	}
+}
+
 function corrections() {
 	document.getElementById("cell1name").textContent = "Mediter-ranean Avenue";
 
@@ -95,7 +121,7 @@ var groups = [
 	new Group("taxes"),
 	new Group("law"),
 	new Group("speech"),
-	new Group("monopoly"),
+	new Group("soe"),
 	new Group("business"),
 	new Group("elections"),
 	new Group("privacy"),
@@ -109,133 +135,133 @@ square[0] = new Square("new-session", "new-session");
 
 square[1] = new Bill("self-gov-rights", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
+], ["increase", "reformat", "decrease"]);
 square[2] = new Bill("self-gov-budget", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
+], ["increase", "reformat", "decrease"]);
 square[3] = new Bill("self-gov-elections", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 
 square[4] = new Square("com-chest1", "com-chest");
 
 square[5] = new Bill("taxes-public-utility", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "increase"]);
+], ["strengthen", "reformat", "ease"]);
 square[6] = new Bill("taxes-self-employment", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "increase"]);
+], ["decrease", "reformat", "increase"]);
 square[7] = new Bill("taxes-indirect", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "increase"]);
+], ["decrease", "reformat", "increase"]);
 
 square[8] = new Square("lobby1", "lobby");
 
 square[9] = new Bill("law-administrative", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 square[10] = new Bill("law-criminal", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[11] = new Bill("law-procedural", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 
 square[12] = new Square("chance1", "chance");
 
 square[13] = new Bill("speech-assembly", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
+], ["increase", "reformat", "decrease"]);
 square[14] = new Bill("speech-press", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
+], ["increase", "reformat", "decrease"]);
 square[15] = new Bill("speech-internet", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
+], ["increase", "reformat", "decrease"]);
 
 square[16] = new Square("jail", "jail");
 
-square[17] = new Bill("monopoly-taxes", 4, [
+square[17] = new Bill("soe-taxes", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
-square[18] = new Bill("monopoly-privileges", 4, [
+], ["increase", "reformat", "decrease"]);
+square[18] = new Bill("soe-privileges", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
-square[19] = new Bill("monopoly-control", 4, [
+], ["increase", "reformat", "decrease"]);
+square[19] = new Bill("soe-control", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "ease"]);
+], ["strengthen", "reformat", "ease"]);
 
 square[20] = new Square("meeting1", "meeting");
 
 square[21] = new Bill("business-taxes", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "increase"]);
+], ["decrease", "reformat", "increase"]);
 square[22] = new Bill("business-supervision", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[23] = new Bill("business-easy-doing", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 
 square[24] = new Square("vacation", "vacation");
 
 square[25] = new Bill("elections-enter", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 square[26] = new Bill("elections-parties", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[27] = new Bill("elections-procedures", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 
 square[28] = new Square("com-chest3", "com-chest");
 
 square[29] = new Bill("privacy-data", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "decrease"]);
+], ["increase", "reformat", "decrease"]);
 square[30] = new Bill("privacy-physical", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "increase"]);
+], ["decrease", "reformat", "increase"]);
 square[31] = new Bill("privacy-registry", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "increase"]);
+], ["decrease", "reformat", "increase"]);
 
 square[32] = new Square("lobby2", "lobby");
 
 square[33] = new Bill("ecology-garbage", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[34] = new Bill("ecology-exhaust", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "ease"]);
-square[35] = new Bill("ecology-forest", 8, [
+], ["strengthen", "reformat", "ease"]);
+square[35] = new Bill("ecology-fireprotection", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "ease"]);
+], ["strengthen", "reformat", "ease"]);
 
 square[36] = new Square("chance3", "chance");
 
 square[37] = new Bill("foreign-invest-npo", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[38] = new Bill("foreign-invest-media", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[39] = new Bill("foreign-invest-commerse", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 
 square[40] = new Square("scandal", "scandal");
 
 square[41] = new Bill("human-rights-movement", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 square[42] = new Bill("human-rights-self-defence", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "strengthen"]);
+], ["ease", "reformat", "strengthen"]);
 square[43] = new Bill("human-rights-trade", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "complicate"]);
+], ["simplify", "reformat", "complicate"]);
 
 square[44] = new Square("meeting2", "meeting");
 
@@ -252,22 +278,23 @@ square[47] = new Bill("piar-create", 11, [
 var communityChestCards = [];
 var chanceCards = [];
 
-communityChestCards[0] = new Card("Get out of Jail, Free. This card may be kept until needed or sold.", function(p) { p.communityChestJailCard = true; updateOwned();});
-communityChestCards[1] = new Card("You have won second prize in a beauty contest. Collect $10.", function() { addamount(10, 'Community Chest');});
-communityChestCards[2] = new Card("From sale of stock, you get $50.", function() { addamount(50, 'Community Chest');});
-communityChestCards[3] = new Card("Life insurance matures. Collect $100.", function() { addamount(100, 'Community Chest');});
-communityChestCards[4] = new Card("Income tax refund. Collect $20.", function() { addamount(20, 'Community Chest');});
-communityChestCards[5] = new Card("Holiday fund matures. Receive $100.", function() { addamount(100, 'Community Chest');});
-communityChestCards[6] = new Card("You inherit $100.", function() { addamount(100, 'Community Chest');});
-communityChestCards[7] = new Card("Receive $25 consultancy fee.", function() { addamount(25, 'Community Chest');});
-communityChestCards[8] = new Card("Pay hospital fees of $100.", function() { subtractamount(100, 'Community Chest');});
-communityChestCards[9] = new Card("Bank error in your favor. Collect $200.", function() { addamount(200, 'Community Chest');});
-communityChestCards[10] = new Card("Pay school fees of $50.", function() { subtractamount(50, 'Community Chest');});
-communityChestCards[11] = new Card("Doctor's fee. Pay $50.", function() { subtractamount(50, 'Community Chest');});
-communityChestCards[12] = new Card("It is your birthday. Collect $10 from every player.", function() { collectfromeachplayer(10, 'Community Chest');});
-communityChestCards[13] = new Card("Advance to \"GO\" (Collect $200).", function() { advance(0);});
-communityChestCards[14] = new Card("You are assessed for street repairs. $40 per house. $115 per hotel.", function() { streetrepairs(40, 115);});
-communityChestCards[15] = new Card("Go to Jail. Go directly to Jail. Do not pass \"GO\". Do not collect $200.", function() { gotojail();});
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new MoneyCard(i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new TicketCard("amendCard", i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new TicketCard("jailCard", i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new TicketCard("moveBillCard", i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new TicketCard("createBillCard", i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new TicketCard("gotoCard", i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new AssemblyRatingCard(i));
+for (var i = 1; i <= 1; i++) 
+    communityChestCards.push(new PeopleRatingCard(i));
+
 
 
 chanceCards[0] = new Card("GET OUT OF JAIL FREE. This card may be kept until needed or traded.", function(p) { p.chanceJailCard=true; updateOwned();});
@@ -348,4 +375,4 @@ var startPayment = 450;
 
 var moneySign = ["", "к Р"];
 
-var lobbyTypes = ['interior', 'monopoly', 'local', 'business'];
+var lobbyTypes = ['interior', 'soe', 'local', 'business'];

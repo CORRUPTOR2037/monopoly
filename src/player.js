@@ -6,8 +6,21 @@ function Player(name, party, isAI) {
 	this.jail = false;
 	this.vacation = false;
 	this.jailroll = 0;
-	this.communityChestJailCard = false;
-	this.chanceJailCard = false;
+	this.assemblyRating = 0;
+	this.peopleRating = 0;
+	this.tickets = {
+		"jailCard": 0,
+		"amendCard": 0,
+		"moveBillCard": 0,
+		"createBillCard": 0,
+		"gotoCard": 0
+	}
+	this.stats = {
+		"state1": 0,
+		"state2": 0,
+		"state3": 0,
+		"amandments": 0
+	}
 	this.bidding = true;
 	this.human = !isAI;
 	this.lobby = {};
@@ -33,4 +46,8 @@ function Player(name, party, isAI) {
 	lobbyTypes.forEach(function(t){
 		lobby[t] = 0;
 	});
+	
+	this.addTicket = function(name){
+		this.tickets[name]++;
+	}
 }

@@ -26,6 +26,10 @@ function wrapMoney(amount) {
     return moneySign[0] + amount + moneySign[1];
 }
 
+Math.range = function(min, max){
+	return Math.floor(Math.random() * (max - min)) + min;
+}
+
 
 // Game Panels
 
@@ -205,7 +209,11 @@ function Stats() {
 						'<span class="p-name" >' + p.name + '</span></div>';
 	
 			// Player money
-			HTML += "<span class='statscellheader'>" + getString('money-header') + ": " + p.money + "</span>";
+			HTML += "<span class='statscellheader'>" + getString('money-header') + ": " + wrapMoney(p.money) + "</span>";
+			
+			// Rating info
+			HTML += "<span class='statscellheader'>" + getString('people-rating-header') + ": " + p.peopleRating + "%" + "</span>";
+			HTML += "<span class='statscellheader'>" + getString('assembly-rating-header') + ": " + p.assemblyRating + "%" + "</span>";
 			
 			// Lobby info
 			HTML += "<span class='statscellheader'>" + getString('lobby-header') + "</span><ul class='stats-lobby-rating'>";
@@ -214,60 +222,9 @@ function Stats() {
 			});
 			HTML += "</ul>";
 			
-			for (var i = 0; i < cellsCount; i++) {
-				sq = square[i];
-	
-				if (sq.owner == x) {
-					mortgagetext = "",
-					housetext = "";
-	
-					if (sq.mortgage) {
-						mortgagetext = "title='Mortgaged' style='color: grey;'";
-					}
-	
-					if (!write) {
-						write = true;
-						HTML += "<table>";
-					}
-	
-					if (sq.house == 5) {
-						housetext += "<span style='float: right; font-weight: bold;'>1&nbsp;x&nbsp;<img src='images/hotel.png' alt='' title='Hotel' class='hotel' style='float: none;' /></span>";
-					} else if (sq.house > 0 && sq.house < 5) {
-						housetext += "<span style='float: right; font-weight: bold;'>" + sq.house + "&nbsp;x&nbsp;<img src='images/house.png' alt='' title='House' class='house' style='float: none;' /></span>";
-					}
-	
-					HTML += "<tr><td class='statscellcolor' style='background: " + sq.color + ";";
-	
-					if (sq.groupNumber == 1 || sq.groupNumber == 2) {
-						HTML += " border: 1px solid grey;";
-					}
-	
-					HTML += "' onmouseover='showdeed(" + i + ");' onmouseout='hidedeed();'></td><td class='statscellname' " + mortgagetext + ">" + sq.name + housetext + "</td></tr>";
-				}
-			}
-	
-			if (p.communityChestJailCard) {
-				if (!write) {
-					write = true;
-					HTML += "<table>";
-				}
-				HTML += "<tr><td class='statscellcolor'></td><td class='statscellname'>Get Out of Jail Free Card</td></tr>";
-	
-			}
-			if (p.chanceJailCard) {
-				if (!write) {
-					write = true;
-					HTML += "<table>";
-				}
-				HTML += "<tr><td class='statscellcolor'></td><td class='statscellname'>Get Out of Jail Free Card</td></tr>";
-	
-			}
-	
-			if (!write) {
-				HTML += p.name + " dosen't have any properties.";
-			} else {
-				HTML += "</table>";
-			}
+			Object.keys(p.stats).forEach(function(key) {
+				HTML += "<span class='statscellheader'>" + getString('stats-' + key) + ": " + p.stats[key] + "</span>";
+			});
 	
 			HTML += "</td>";
 		}
@@ -736,7 +693,7 @@ function buyChooseSide(playerIndex, bill, cost) {
     }
 	if (!player[playerIndex].AI) {
         alert.showChoose(getString("buy-choose-side-text"), bill.sides, function(index){
-			buy(playerIndex, bill, cost, index == 0 ? 1 : -1);
+			buy(playerIndex, bill, cost, 1 - index);
 		});
     } else {
 		buy(playerIndex, bill, cost, player[playerIndex].party.groupsReaction[bill.style]);
@@ -786,7 +743,7 @@ function passBuy() {
 	var p = player[turn];
 	var bill = square[p.position];
 	if (bill.state == 0) {
-        makeAuction();
+        makeAuction(bill);
     }
 	buttons.performEndTurn();
 }
@@ -794,14 +751,25 @@ function passBuy() {
 function amend() {
 	var p = player[turn];
 	var bill = square[p.position];
-    var rent = bill.price().visit;
-			
-	p.pay(bill.price().visit);
-	bill.direction += p.party.groupsReaction[bill.style] * 0.1;
-	bill.amendments++;
-	gameLog.add(getString("amended-to").replace("%player", p.name).replace("%place", bill.uiName).replace("%price", rent), p, -1);
-	
-	nextTurn();
+    var cost = bill.price().visit;
+	if (p.money >= cost) {
+		p.pay(cost);
+		bill.amendments++;
+		gameLog.add(getString("amended-to").replace("%player", p.name).replace("%place", bill.uiName).replace("%price", cost), p, -1);
+		if (p.AI) {
+			bill.direction += p.party.groupsReaction[bill.style] * 0.1;
+		} else {
+			alert.showChoose(getString("amend-choose-side-text"), bill.sides, function(index){
+				bill.direction += 0.1 * (1 - index);
+			});
+		}
+		updateOwned();
+	} else {
+		if (!p.AI)
+            alert.showAccept(getString("you-need-money").replace("%money", (cost - p.money)));
+	}
+	updateOwned();
+	this.endTurn.show();
 }
 
 
@@ -900,8 +868,9 @@ function landOnBill(s, playerIndex) {
 	// Collect rent
 	if (s.state > 0){
 		if (s.owner != turn) {
+			
 			if (p.AI){
-				amend(playerIndex, s);
+				amend();
 			} else {
 				buttons.update(["amend"]);
 			}

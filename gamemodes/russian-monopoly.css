@@ -11,7 +11,7 @@
     background: linear-gradient(to top, white 80%, #841acf 80%);
 }
 
-.cell.monopoly:before {
+.cell.soe:before {
     background: linear-gradient(to top, white 80%, #dec01d 80%);
 }
 .cell.business:before {
