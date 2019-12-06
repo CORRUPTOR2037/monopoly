@@ -209,11 +209,11 @@ function Stats() {
 						'<span class="p-name" >' + p.name + '</span></div>';
 	
 			// Player money
-			HTML += "<span class='statscellheader'>" + getString('money-header') + ": " + wrapMoney(p.money) + "</span>";
+			HTML += "<span class='statscellheader icon money-icon left'></span><span class='statscellheader'>" + getString('money-header') + ": " + wrapMoney(p.money) + "</span>";
 			
 			// Rating info
-			HTML += "<span class='statscellheader'>" + getString('people-rating-header') + ": " + p.peopleRating + "%" + "</span>";
-			HTML += "<span class='statscellheader'>" + getString('assembly-rating-header') + ": " + p.assemblyRating + "%" + "</span>";
+			HTML += "<span class='statscellheader icon people-icon left'></span><span class='statscellheader'>" + getString('people-rating-header') + ": " + p.peopleRating + "%" + "</span>";
+			HTML += "<span class='statscellheader icon assembly-icon left'></span><span class='statscellheader'>" + getString('assembly-rating-header') + ": " + p.assemblyRating + "%" + "</span>";
 			
 			// Lobby info
 			HTML += "<span class='statscellheader'>" + getString('lobby-header') + "</span><ul class='stats-lobby-rating'>";
@@ -260,11 +260,28 @@ function updatePosition() {
 function updateMoney() {
 	var currentPlayer = player[turn];
 
-	$("#main-player-money").html(wrapMoney(currentPlayer.money));
+	$("#qs-money").html(wrapMoney(currentPlayer.money));
+	$("#qs-assembly-rating").html(currentPlayer.assemblyRating);
+	$("#qs-people-rating").html(currentPlayer.peopleRating);
 
 	if (currentPlayer.money < 0) {
 		buttons.rollDices.hide();
 	}
+	updateTickets();
+}
+
+function updateTickets() {
+	var currentPlayer = player[turn];
+	var html = "";
+	Object.keys(currentPlayer.tickets).forEach(function(key){
+		if (currentPlayer.tickets[key] > 0) {
+			html += "<a class='card " + key + "' title='" + getString(key + "-title") + "' onclick='useTicket(\"" + key + "\")'></a>";
+		} else {
+			html += "<span class='card " + key + "' title='" + getString(key + "-title") + "'></span>";
+		}
+		html += "<span class='cardcount'>" + currentPlayer.tickets[key] + "</span><br>";
+	});
+    $("#player-tickets").html(html);
 }
 
 function updateDice() {
@@ -357,59 +374,31 @@ function updateOwned() {
 	}
 
 	setEnlarge(square[p.position].cell, "control-enlarge");
+	var accepted = currentPlayer.stats["state1"] + currentPlayer.stats["state2"] + currentPlayer.stats["state3"];
 	document.getElementById("owned").innerHTML =
-		getString("review-bills-count") + count + " / " + getString("accepted-bills-count") + currentPlayer.acceptedBills + " / " + getString("rejected-bills-count") + currentPlayer.rejectedBills;
+		getString("review-bills-count") + count + " / " + getString("accepted-bills-count") + accepted + " / " + getString("rejected-bills-count") + currentPlayer.stats["rejected"];
 }
 
-function chanceCommunityChest() {
+function getCard() {
 	var p = player[turn];
+	var s = square[p.position];
+	
+	var chest;
 
 	// Community Chest
-	if (p.position === 2 || p.position === 17 || p.position === 33) {
-		var communityChestIndex = communityChestCards.deck[communityChestCards.index];
+	if (s.type == "com-chest") {
+		chest = communityChestCards;
+	} else if (s.type == "chance") {
+        chest = chanceCards;
+    }
+	var card = chest[chest.deck[chest.index]];
+	chest.index++;
 
-		// Remove the get out of jail free card from the deck.
-		if (communityChestIndex === 0) {
-			communityChestCards.deck.splice(communityChestCards.index, 1);
-		}
-
-		alert.showAccept("<img src='images/community_chest_icon.png' style='height: 50px; width: 53px; float: left; margin: 8px 8px 8px 0px;' /><div style='font-weight: bold; font-size: 16px; '>Community Chest:</div><div style='text-align: justify;'>" + communityChestCards[communityChestIndex].text + "</div>", function() {
-			communityChestAction(communityChestIndex);
-		});
-
-		communityChestCards.index++;
-
-		if (communityChestCards.index >= communityChestCards.deck.length) {
-			communityChestCards.index = 0;
-		}
-
-	// Chance
-	} else if (p.position === 7 || p.position === 22 || p.position === 36) {
-		var chanceIndex = chanceCards.deck[chanceCards.index];
-
-		// Remove the get out of jail free card from the deck.
-		if (chanceIndex === 0) {
-			chanceCards.deck.splice(chanceCards.index, 1);
-		}
-
-		alert.showAccept("<img src='images/chance_icon.png' style='height: 50px; width: 26px; float: left; margin: 8px 8px 8px 0px;' /><div style='font-weight: bold; font-size: 16px; '>Chance:</div><div style='text-align: justify;'>" + chanceCards[chanceIndex].text + "</div>", function() {
-			chanceAction(chanceIndex);
-		});
-
-		chanceCards.index++;
-
-		if (chanceCards.index >= chanceCards.deck.length) {
-			chanceCards.index = 0;
-		}
-	} else {
-		if (!p.human) {
-			p.AI.alertList = "";
-
-			if (!p.AI.onLand()) {
-				nextTurn();
-			}
-		}
+	if (chest.index >= chest.deck.length) {
+		chest.index = 0;
 	}
+
+	return card;
 }
 
 function chanceAction(chanceIndex) {
@@ -422,21 +411,6 @@ function chanceAction(chanceIndex) {
 	updateMoney();
 
 	if (chanceIndex !== 15 && !p.human) {
-		p.AI.alertList = "";
-		nextTurn();
-	}
-}
-
-function communityChestAction(communityChestIndex) {
-	var p = player[turn]; // This is needed for reference in action() method.
-
-	// $('#popupbackground').hide();
-	// $('#popupwrap').hide();
-	communityChestCards[communityChestIndex].action(p);
-
-	updateMoney();
-
-	if (communityChestIndex !== 15 && !p.human) {
 		p.AI.alertList = "";
 		nextTurn();
 	}
@@ -571,49 +545,6 @@ function payfifty() {
 
 	gameLog.add(p.name + " paid the $50 fine to get out of jail.", p, -1);
 	updateMoney();
-	updatePosition();
-}
-
-function useJailCard() {
-	var p = player[turn];
-
-	document.getElementById("jail").style.border = '1px solid black';
-	document.getElementById("cell11").style.border = '2px solid ' + p.color;
-
-	$("#landed").hide();
-	p.jail = false;
-	p.jailroll = 0;
-
-	p.position = 10;
-
-	doublecount = 0;
-
-	if (p.communityChestJailCard) {
-		p.communityChestJailCard = false;
-
-		// Insert the get out of jail free card back into the community chest deck.
-		communityChestCards.deck.splice(communityChestCards.index, 0, 0);
-
-		communityChestCards.index++;
-
-		if (communityChestCards.index >= communityChestCards.deck.length) {
-			communityChestCards.index = 0;
-		}
-	} else if (p.chanceJailCard) {
-		p.chanceJailCard = false;
-
-		// Insert the get out of jail free card back into the chance deck.
-		chanceCards.deck.splice(chanceCards.index, 0, 0);
-
-		chanceCards.index++;
-
-		if (chanceCards.index >= chanceCards.deck.length) {
-			chanceCards.index = 0;
-		}
-	}
-
-	gameLog.add(p.name + " used a \"Get Out of Jail Free\" card.", p);
-	updateOwned();
 	updatePosition();
 }
 
@@ -848,56 +779,57 @@ function soldSoul() {
  *
  */
 
-function landOnBill(s, playerIndex) {
+function landOnBill(bill, playerIndex) {
 	var p = player[playerIndex];
-    // Allow player to buy the property on which he landed.
-	if (s.state == 0) {
-		if (p.AI) {
-			if (p.AI.buyProperty(p.position)) {
-				buyChooseSide(playerIndex, s, s.price().buy);
+		// Allow player to buy the property on which he landed.
+		if (bill.state == 0) {
+			if (p.AI) {
+				if (p.AI.buyProperty(p.position)) {
+					buyChooseSide(playerIndex, bill, bill.price().buy);
+				} else {
+					makeAuction();
+				}
+				updateOwned();
 			} else {
-				makeAuction();
+				buttons.update(["buy", "pass"]);
 			}
-			updateOwned();
-		} else {
-			buttons.update(["buy", "pass"]);
+			return;
 		}
-		return;
-	}
-
-	// Collect rent
-	if (s.state > 0){
-		if (s.owner != turn) {
-			
-			if (p.AI){
-				amend();
+	
+		// Collect rent
+		if (bill.state > 0){
+			if (bill.owner != turn) {
+				
+				if (p.AI){
+					amend();
+				} else {
+					buttons.update(["amend"]);
+				}
 			} else {
-				buttons.update(["amend"]);
+				if (p.AI){
+					moveBill(bill);
+				} else {
+					buttons.update(['move']);
+				}
 			}
-        } else {
-			if (p.AI){
-				moveBill(s);
-			} else {
-				buttons.update(['move']);
-			}
+			return;
 		}
-		return;
-	} 
 }
 
-function addCommunityCard(square, player) {
-    if (!p.human) {
-		alert.showAccept(p.AI.alertList, chanceCommunityChest);
-		p.AI.alertList = "";
+function takeCard(s, playerIndex) {
+	var p = player[playerIndex];
+	var prizeCard = getCard();
+	console.log(prizeCard);
+	prizeCard.randomize(p);
+    if (p.human) {
+		alert.showAccept(prizeCard.text(),  () => prizeCard.action(p));
 	} else {
-		chanceCommunityChest();
+		prizeCard.action(p);
 	}
-	nextTurn();
+	buttons.performEndTurn();
 }
+
 function lobby(square, player) {
-    nextTurn();
-}
-function chance(square, player) {
     nextTurn();
 }
 function corruptionVisit(square, player) {
@@ -923,6 +855,69 @@ function scandal(square, player) {
 	nextTurn();
 }
 
+function useTicket(type) {
+	var p = player[turn];
+	if (p.tickets[type] <= 0) {
+		alert.showAccept(getString("player-dont-have-card"));
+        return;
+    }
+	if (!canPerformAction(p, type)) {
+        alert.showAccept(getString(type + "-card-cant-be-used"));
+        return;
+    }
+	p.removeTicket(type);
+	updateTickets();
+	gameLog.add(getString("player-used").replace("%player", p.name).replace("%thing", getString(type + "-title")), p);
+	performAction(p, type);
+}
+
+function canPerformAction(p, type) {
+    switch (type) {
+        case "jailCard": {
+			return p.jail;
+		} break;
+		case "moveBillCard": {
+			for (var i = 0; i < square.length; i++) {
+                if (player[square[i].owner] == p && square[i].state > 0) return true;
+            }
+			return false;
+		} break;
+		case "createBillCard": {
+			for (var i = 0; i < square.length; i++) {
+                if (square[i].state == 0) return true;
+            }
+			return false;
+		} break;
+		case "amendCard": {
+			for (var i = 0; i < square.length; i++) {
+                if (square[i].state > 0) return true;
+            }
+		} break;
+		case "gotoCard": {
+			return !p.jail;
+		} break;
+    }
+}
+function performAction(p, type) {
+    switch (type) {
+        case "jailCard": {
+			
+		} break;
+		case "moveBillCard": {
+			
+		} break;
+		case "createBillCard": {
+			
+		} break;
+		case "amendCard": {
+			
+		} break;
+		case "gotoCard": {
+			
+		} break;
+    }
+}
+
 /*
  *
  * HANDLING TURNS
@@ -940,7 +935,6 @@ function land() {
 	
 	updatePosition();
 
-	console.log(currentPlayer + " " + s.style);
 	if (currentPlayer.AI)
 		currentPlayer.AI.onLand();
 	s.onVisit(s, turn);
@@ -951,7 +945,6 @@ function land() {
 
 function roll() {
 	var currentPlayer = player[turn];
-	console.log(currentPlayer.name + " rolling");
 
 	buttons.buy.show();
 	buttons.manage.hide();
@@ -980,7 +973,7 @@ function roll() {
 		} else if (game.doublecount === 3) {
 			currentPlayer.jail = true;
 			game.doublecount = 0;
-			gameLog.add(p.name + " rolled doubles three times in a row.");
+			gameLog.add(getString("rolled-doubles-three-times").replace("%player", p.name));
 			updateMoney();
 
 			if (currentPlayer.human) {
@@ -1060,7 +1053,6 @@ function roll() {
 }
 
 function nextTurn() {
-	console.log(player[turn].name + ' end ' + game.shouldEndTurn());
 	var currentPlayer = player[turn];
 	if (currentPlayer.AI){
 		if (currentPlayer.money < 0) {
@@ -1092,10 +1084,7 @@ function play() {
 	}
 
 	var currentPlayer = player[turn];
-	console.log(currentPlayer.name + " start");
 	game.resetDice();
-
-	document.getElementById("main-player-name").innerHTML = currentPlayer.name;
 
 	gameLog.add(getString("it-is-turn").replace("%player", currentPlayer.name), currentPlayer);
 
@@ -1202,7 +1191,7 @@ function setup() {
 	function sort_deck(array) {
 		array.index = 0;
 		array.deck = [];
-		for (var i = 0; i < array.length; i++) chanceCards.deck[i] = i;
+		for (var i = 0; i < array.length; i++) array.deck[i] = i;
 		array.deck.sort(function() {return Math.random() - 0.5;});
     }
 	sort_deck(chanceCards);
@@ -1226,14 +1215,11 @@ function setup() {
 	
 	for (var i = 0; i < square.length; i++) {
 		var point = square[i];
-        if (point.constructor.name == 'Bill'){
-			point.onVisit = landOnBill;
-			continue;
-		}
 		switch (point.style) {
-            case 'com-chest': point.onVisit = addCommunityCard; break;
+			case 'bill': point.onVisil = landOnBill; break;
+            case 'com-chest': point.onVisit = takeCard; break;
 			case 'lobby': point.onVisit = lobby; break;
-			case 'chance': point.onVisit = chance; break;
+			case 'chance': point.onVisit = takeCard; break;
 			case 'jail': point.onVisit = corruptionVisit; break;
 			case 'scandal': point.onVisit = corruptionTake; break;
 			case 'meeting': point.onVisit = meeting; break;

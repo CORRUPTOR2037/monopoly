@@ -1,6 +1,7 @@
 function Square(name, style) {
 	this.name = name;
 	this.style = style;
+	this.type = style;
 	
 	this.uiName = getString(style);
 }
@@ -11,6 +12,7 @@ function Bill(name, groupNumber, prices, sides) {
 	this.style = group.style;
 	this.group = group;
 	this.owner = undefined;
+	this.type = "bill";
 	
 	this.state = 0;
 	this.amendments = 0;
@@ -41,69 +43,87 @@ function Price(buy, visit) {
 	this.buy = buy;
 	this.visit = visit;
 }
-function Card(text, action) {
-	this.text = text;
-	this.action = action;
-}
 
-function MoneyCard(index) {
-	this.text = "money-card" + index;
-	this.action = function(player) {
-		player.money += 10 * Math.range(1, 20);
+function MoneyCard(index, positive) {
+	this.amount = 0;
+	this.randomize = function(){
+		this.amount = 10 * Math.range(1, 20);
 	}
+	if (positive) {
+        this.textTemplate = "add-money-card" + index;
+		this.action = function(p){
+			p.money += this.amount;
+			gameLog.add(getString("player-got").replace("%player", p.name).replace("%thing", wrapMoney(this.amount)), p, 1);
+			updateMoney();
+		};
+    } else {
+		this.textTemplate = "remove-money-card" + index;
+		this.action = function(p){
+			p.pay(this.amount);
+			gameLog.add(getString("player-lost").replace("%player", p.name).replace("%thing", wrapMoney(this.amount)), p, -1);
+			updateMoney();
+		};
+	}
+	this.text = () => getString(this.textTemplate).replace("%amount", wrapMoney(this.amount));
+	
 }
 function TicketCard(name, index) {
-	this.text = "ticket-card-" + name + index;
+	this._text = getString("ticket-card-" + name + index);
+	this.text = () => this._text;
 	this.ticketName = name;
+	this.randomize = () => {};
 	this.action = function(player) {
 		player.addTicket(this.ticketName);
+		gameLog.add(getString("player-got").replace("%player", p.name).replace("%thing", getString(this.ticketName + "-title")), p, 1);
+		updateTickets();
 	}
 }
-function AssemblyRatingCard(index) {
-	this.text = "assembly-rating-card" + index;
+function ActionCard(name, index) {
+	this._text = getString("action-card-" + name + index);
+	this.text = () => this._text;
+	this.ticketName = name;
+	this.randomize = () => {};
 	this.action = function(player) {
-		player.assemblyRating += Math.range(1, 10);
+		useTicket(this.ticketName);
 	}
 }
-function PeopleRatingCard(index) {
-	this.text = "assembly-rating-card" + index;
+function RatingCard(index, type, positive) {
+	if (positive) {
+        this._text = getString(type + "-ratingup-card" + index);
+    } else {
+		this._text = getString(type + "-ratingdown-card" + index);
+	}
+	this.text = () => this._text;
+	this.amount = 0;
+	this.randomize = function(){
+		this.amount = Math.range(1, 10);
+	}
+	this.positive = positive;
+	this.type = type;
 	this.action = function(player) {
-		player.peopleRating += Math.range(1, 10);
+		if (this.type == "assembly") {
+            player.assemblyRating += this.amount;
+		} else if (this.type == "people") {
+            player.peopleRating += this.amount;
+        } else return;
+		if (this.positive) {
+            gameLog.add(getString("increased-" + this.type + "-rating").replace("%player", p.name).replace("%amount", this.amount), p, 1);
+        } else {
+			gameLog.add(getString("decreased-" + this.type + "-rating").replace("%player", p.name).replace("%amount", this.amount), p, 1);
+        }
+		updateMoney();
 	}
 }
-
-function corrections() {
-	document.getElementById("cell1name").textContent = "Mediter-ranean Avenue";
-
-	// Add images to enlarges.
-	document.getElementById("enlarge5token").innerHTML += '<img src="images/train_icon.png" height="60" width="65" alt="" style="position: relative; bottom: 20px;" />';
-	document.getElementById("enlarge15token").innerHTML += '<img src="images/train_icon.png" height="60" width="65" alt="" style="position: relative; top: -20px;" />';
-	document.getElementById("enlarge25token").innerHTML += '<img src="images/train_icon.png" height="60" width="65" alt="" style="position: relative; top: -20px;" />';
-	document.getElementById("enlarge35token").innerHTML += '<img src="images/train_icon.png" height="60" width="65" alt="" style="position: relative; top: -20px;" />';
-	document.getElementById("enlarge12token").innerHTML += '<img src="images/electric_icon.png" height="60" width="48" alt="" style="position: relative; top: -20px;" />';
-	document.getElementById("enlarge28token").innerHTML += '<img src="images/water_icon.png" height="60" width="78" alt="" style="position: relative; top: -20px;" />';
-}
-
-function utiltext() {
-	return '&nbsp;&nbsp;&nbsp;&nbsp;If one "Utility" is owned rent is 4 times amount shown on dice.<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;If both "Utilitys" are owned rent is 10 times amount shown on dice.';
-}
-
-function transtext() {
-	return '<div style="font-size: 14px; line-height: 1.5;">Rent<span style="float: right;">$25.</span><br />If 2 Railroads are owned<span style="float: right;">50.</span><br />If 3 &nbsp; &nbsp; " &nbsp; &nbsp; " &nbsp; &nbsp; "<span style="float: right;">100.</span><br />If 4 &nbsp; &nbsp; " &nbsp; &nbsp; " &nbsp; &nbsp; "<span style="float: right;">200.</span></div>';
-}
-
-function luxurytax() {
-	addAlert(player[turn].name + " paid $100 for landing on Luxury Tax.");
-	player[turn].pay(100, 0);
-
-	landedPanel.show("You landed on Luxury Tax. Pay $100.");
-}
-
-function citytax() {
-	addAlert(player[turn].name + " paid $200 for landing on City Tax.");
-	player[turn].pay(200, 0);
-
-	landedPanel.show("You landed on City Tax. Pay $200.");
+function GotoCard(name, index) {
+	this._text = getString("goto-" + name + index);
+	this.text = () => this._text;
+	this.ticketName = name;
+	this.randomize = () => {};
+	this.action = function(player) {
+		player.addTicket(this.ticketName);
+		gameLog.add(getString("player-got").replace("%player", p.name).replace("%thing", this.ticketName + "-title"), p, 1);
+		updateTickets();
+	}
 }
 
 function Group(name) {
@@ -278,42 +298,51 @@ square[47] = new Bill("piar-create", 11, [
 var communityChestCards = [];
 var chanceCards = [];
 
-for (var i = 1; i <= 1; i++) 
-    communityChestCards.push(new MoneyCard(i));
-for (var i = 1; i <= 1; i++) 
+communityChestCards.push(new TicketCard("amendCard", 1));
+/*for (var i = 1; i <= 1; i++) {
+    communityChestCards.push(new MoneyCard(i, true));
+	chanceCards.push(new MoneyCard(i, true));
+	chanceCards.push(new MoneyCard(i, false));
+}
+for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("amendCard", i));
-for (var i = 1; i <= 1; i++) 
+	chanceCards.push(new TicketCard("amendCard", i));
+	chanceCards.push(new ActionCard("amendCard", i));
+}
+for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("jailCard", i));
-for (var i = 1; i <= 1; i++) 
+	chanceCards.push(new TicketCard("jailCard", i));
+}
+for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("moveBillCard", i));
-for (var i = 1; i <= 1; i++) 
+	chanceCards.push(new TicketCard("moveBillCard", i));
+	chanceCards.push(new ActionCard("moveBillCard", i));
+}
+for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("createBillCard", i));
-for (var i = 1; i <= 1; i++) 
+	chanceCards.push(new TicketCard("createBillCard", i));
+	chanceCards.push(new ActionCard("createBillCard", i));
+}
+for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("gotoCard", i));
-for (var i = 1; i <= 1; i++) 
-    communityChestCards.push(new AssemblyRatingCard(i));
-for (var i = 1; i <= 1; i++) 
-    communityChestCards.push(new PeopleRatingCard(i));
-
-
-
-chanceCards[0] = new Card("GET OUT OF JAIL FREE. This card may be kept until needed or traded.", function(p) { p.chanceJailCard=true; updateOwned();});
-chanceCards[1] = new Card("Make General Repairs on All Your Property. For each house pay $25. For each hotel $100.", function() { streetrepairs(25, 100);});
-chanceCards[2] = new Card("Speeding fine $15.", function() { subtractamount(15, 'Chance');});
-chanceCards[3] = new Card("You have been elected chairman of the board. Pay each player $50.", function() { payeachplayer(50, 'Chance');});
-chanceCards[4] = new Card("Go back three spaces.", function() { gobackthreespaces();});
-chanceCards[5] = new Card("ADVANCE TO THE NEAREST UTILITY. IF UNOWNED, you may buy it from the Bank. IF OWNED, throw dice and pay owner a total ten times the amount thrown.", function() { advanceToNearestUtility();});
-chanceCards[6] = new Card("Bank pays you dividend of $50.", function() { addamount(50, 'Chance');});
-chanceCards[7] = new Card("ADVANCE TO THE NEAREST RAILROAD. If UNOWNED, you may buy it from the Bank. If OWNED, pay owner twice the rental to which they are otherwise entitled.", function() { advanceToNearestRailroad();});
-chanceCards[8] = new Card("Pay poor tax of $15.", function() { subtractamount(15, 'Chance');});
-chanceCards[9] = new Card("Take a trip to Reading Rail Road. If you pass \"GO\" collect $200.", function() { advance(5);});
-chanceCards[10] = new Card("ADVANCE to Boardwalk.", function() { advance(39);});
-chanceCards[11] = new Card("ADVANCE to Illinois Avenue. If you pass \"GO\" collect $200.", function() { advance(24);});
-chanceCards[12] = new Card("Your building loan matures. Collect $150.", function() { addamount(150, 'Chance');});
-chanceCards[13] = new Card("ADVANCE TO THE NEAREST RAILROAD. If UNOWNED, you may buy it from the Bank. If OWNED, pay owner twice the rental to which they are otherwise entitled.", function() { advanceToNearestRailroad();});
-chanceCards[14] = new Card("ADVANCE to St. Charles Place. If you pass \"GO\" collect $200.", function() { advance(11);});
-chanceCards[15] = new Card("Go to Jail. Go Directly to Jail. Do not pass \"GO\". Do not collect $200.", function() { gotojail();});
-
+	chanceCards.push(new TicketCard("gotoCard", i));
+	chanceCards.push(new ActionCard("gotoCard", i));
+}
+for (var i = 1; i <= 1; i++) {
+    communityChestCards.push(new RatingCard(i, "assembly"));
+	chanceCards.push(new RatingCard(i, "assembly"));
+	chanceCards.push(new RatingCard(i, "assembly"));
+}
+for (var i = 1; i <= 1; i++) {
+    communityChestCards.push(new RatingCard(i, "people"));
+	chanceCards.push(new RatingCard(i, "people"));
+	chanceCards.push(new RatingCard(i, "assembly"));
+}
+chanceCards.push(new GotoCard(i, "law"));
+chanceCards.push(new GotoCard(i, "jail"));
+chanceCards.push(new GotoCard(i, "vacation"));
+chanceCards.push(new GotoCard(i, "meeting"));
+chanceCards.push(new GotoCard(i, "lobby"));*/
 
 function Party(text, difficulty, groupsReaction, specialization) {
     this.text = text;
@@ -373,6 +402,6 @@ var difficultiesNames = ['easy', 'normal', 'hard', 'very hard', 'impossible']
 
 var startPayment = 450;
 
-var moneySign = ["", "к Р"];
+var moneySign = ["", "к ₽"];
 
 var lobbyTypes = ['interior', 'soe', 'local', 'business'];

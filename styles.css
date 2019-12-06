@@ -173,8 +173,25 @@ body {
 
 #quickstats {
     width: 78px;
+    height: 46px;
+    position: relative;
+    text-align: center;
 }
 
+#quickstats .bottom {
+    display: block;
+    margin-top: 14px;
+}
+
+#quickstats .rating, #player-tickets .cardcount {
+    margin: 0 5px;
+}
+#player-tickets .cardcount {
+    display: inline-block;
+    float: right;
+    width: 50%;
+    line-height: 21px;
+}
 #owned {
     width: 300px;
     height: 16px;
@@ -192,9 +209,11 @@ body {
     font-weight: bold;
     color: white;
     font-size: 13px;
-    padding: 4px;
+    padding: 2px 4px;
     margin: 0px;
     margin-right: 0px;
+    height: 36px;
+    line-height: 14px;
 }
 
 #control button {
@@ -215,7 +234,7 @@ body {
 
 #game-log {
 	width: 307px;
-	height: 92px;
+	height: 120px;
 	margin: 0px;
 	padding-left: 1px;
 	border: 1px solid gray;
@@ -1030,4 +1049,57 @@ ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::befo
 .cell-spec.active {
     height: 7px;
     background: #00ffbf;
+}
+
+#stats .icon {
+    margin-right: 4px;
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+    background-size: 100% 100%;
+}
+
+.people-icon {
+    background-image: url(images/people_icon.png);
+}
+.assembly-icon {
+    background-image: url(images/assembly_icon.png);
+}
+.money-icon {
+    background-image: url(images/money_icon.png);
+}
+
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
+
+.card {
+    width: 32px;
+    height: 21px;
+    display: inline-block;
+}
+a.card {
+    cursor: pointer;
+}
+
+.jailCard {
+    background-image: url(images/jailCardIcon.png);
+}
+.amendCard {
+    background-image: url(images/amendCardIcon.png);
+}
+.moveBillCard {
+    background-image: url(images/moveBillCardIcon.png);
+}
+.createBillCard {
+    background-image: url(images/createBillCardIcon.png);
+}
+.gotoCard {
+    background-image: url(images/gotoCardIcon.png);
 }

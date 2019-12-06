@@ -19,7 +19,8 @@ function Player(name, party, isAI) {
 		"state1": 0,
 		"state2": 0,
 		"state3": 0,
-		"amandments": 0
+		"amandments": 0,
+		"rejected": 0
 	}
 	this.bidding = true;
 	this.human = !isAI;
@@ -36,9 +37,6 @@ function Player(name, party, isAI) {
 	
 	this.style = this.party.style;
 	
-	this.acceptedBills = 0
-	this.rejectedBills = 0
-	
 	this.chip = document.createElement('div');
 	this.chip.className = 'player-chip ' + this.style;
 	
@@ -49,5 +47,8 @@ function Player(name, party, isAI) {
 	
 	this.addTicket = function(name){
 		this.tickets[name]++;
+	}
+	this.removeTicket = function(name){
+		this.tickets[name]--;
 	}
 }

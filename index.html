@@ -131,9 +131,13 @@
 					<div id="owned"></div>
 				</td>
 				<td style="vertical-align: top; border: none;" rowspan="2">
-						<div id="quickstats" style="">
-								<div><span id="main-player-name" >Player 1</span>:</div>
+					<div id="quickstats" style="">
+						<div><span class="icon money-icon left"></span><span id="qs-money"></span></div>
+						<div class="bottom">
+							<span class="icon people-icon left"></span><span id="qs-assembly-rating" class="rating left"></span>
+							<span class="icon assembly-icon right"></span><span id="qs-people-rating" class="rating right"></span>
 						</div>
+					</div>
 				</td>
 			</tr>
 			<tr>
@@ -157,14 +161,16 @@
 					</div>
 				</td>
 				<td>
-					<button id="roll-dices" onclick="roll();" class="localized-string" title="Roll dices and move your token accordingly." >Roll dices</button>
-					<button id="end-turn" onclick="play();" class="localized-string" title="End turn of current player">End turn</button>
+					<button id="roll-dices" onclick="roll();" class="localized-string" title="roll-dices-title" >Roll dices</button>
+					<button id="end-turn" onclick="play();" class="localized-string">End turn</button>
 				</td>
 			</tr>
 			<tr>
-				<td colspan="2">
+				<td>
 					<div id="game-log"></div>
-					
+				</td>
+				<td>
+					<div id="player-tickets"></div>
 				</td>
 			</tr>
 		</tbody></table>
