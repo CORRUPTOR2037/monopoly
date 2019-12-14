@@ -20,12 +20,11 @@
 
 <body>
 	<div id="popupbackground"></div>
-	<div id="popupwrap">
+	<div id="popupwrap" class="alert-text">
 		<div id="popup" class="panel">
 			<div style="position: relative;">
 				<!-- <img id="popupclose" src="Images/close.png" title="Close" alt="x" onclick="hide('popupbackground'); hide('popupwrap');" /> -->
 				<div id="popup-text"></div>
-				<div id="popupdrag"></div>
 			</div>
 		</div>
 	</div>
@@ -34,7 +33,7 @@
 	<div id="statswrap">
 		<div class="panel" id="stats">
 			<div style="position: relative;">
-				<img id="statsclose" src="images/close.png" title="Close" alt="x" />
+				<img id="statsclose" class="windowclose" src="images/close.png" title="Close" alt="x" />
 				<div id="statstext"></div>
 				<div id="statsdrag"></div>
 			</div>
@@ -134,8 +133,8 @@
 					<div id="quickstats" style="">
 						<div><span class="icon money-icon left"></span><span id="qs-money"></span></div>
 						<div class="bottom">
-							<span class="icon people-icon left"></span><span id="qs-assembly-rating" class="rating left"></span>
-							<span class="icon assembly-icon right"></span><span id="qs-people-rating" class="rating right"></span>
+							<span class="icon people-icon left"></span><span id="qs-people-rating" class="rating left"></span>
+							<span class="icon assembly-icon right"></span><span id="qs-assembly-rating" class="rating right"></span>
 						</div>
 					</div>
 				</td>
@@ -149,15 +148,19 @@
 				<td>
 					<div id="menu">
 						<button class="menu-item localized-string" id="buy-menu-item" onclick="buyChooseSide()">Buy</button>
-						<button class="menu-item localized-string" id="pass-menu-item" onclick="passBuy()">Pass</button>
+						<!-- <button class="menu-item localized-string" id="pass-menu-item" onclick="passBuy()">Pass</button> -->
 						<button class="menu-item localized-string" id="amend-menu-item" onclick="amend()">Amend</button>
+						<button class="menu-item localized-string" id="say-menu-item" onclick="askSay()">Say</button>
 						<button class="menu-item localized-string" id="move-menu-item" onclick="move()">Move</button>
+						<button class="menu-item localized-string" id="lobby-menu-item" onclick="openLobby()">Lobby</button>
+						<button class="menu-item localized-string" id="confirm-selection-menu-item" onclick="confirmSelection()">Confirm</button>
+						<button class="menu-item localized-string" id="cancel-selection-menu-item" onclick="cancelSelection()">Cancel</button>
 						<button class="menu-item localized-string" id="take-menu-item">Take</button>
 						<button class="menu-item localized-string" id="visit-menu-item">Visit</button>
 					</div>
 					<div style="float: right;">
-						<div id="die0" title="Die" class="die die-no-img"></div>
-						<div id="die1" title="Die" class="die die-no-img"></div>
+						<img id="die0" title="Die" class="die die-no-img"></img>
+						<img id="die1" title="Die" class="die die-no-img"></img>
 					</div>
 				</td>
 				<td>
@@ -210,6 +213,14 @@
 				</td>
 			</tr>
 		</table>
+	</div>
+	
+	<div id="lobbyscreen">
+		<div class='panel'>
+			<img id="lobbyclose" class="windowclose" src="images/close.png" title="Close" alt="x" />
+			<div id="lobby-help" class="alert-text localized-string">Lobby Help</div>
+			<table></table>
+		</div>
 	</div>
 	<script type="text/javascript">
 		$('.localized-string').map(setString);

@@ -17,6 +17,7 @@ function Bill(name, groupNumber, prices, sides) {
 	this.state = 0;
 	this.amendments = 0;
 	this.direction = 0;
+	this.forceMove = false;
 	
 	this.prices = prices;
 	
@@ -87,6 +88,15 @@ function ActionCard(name, index) {
 		useTicket(this.ticketName);
 	}
 }
+function MissMoveCard(index) {
+	this._text = "miss-move-card-" + index;
+	this.text = () => this._text;
+	this.ticketName = name;
+	this.randomize = () => {};
+	this.action = function(player) {
+		useTicket(this.ticketName);
+	}
+}
 function RatingCard(index, type, positive) {
 	if (positive) {
         this._text = getString(type + "-ratingup-card" + index);
@@ -102,9 +112,9 @@ function RatingCard(index, type, positive) {
 	this.type = type;
 	this.action = function(player) {
 		if (this.type == "assembly") {
-            player.assemblyRating += this.amount;
+            player.setAssemblyRating(player.assemblyRating + this.amount);
 		} else if (this.type == "people") {
-            player.peopleRating += this.amount;
+            player.setPeopleRating(player.peopleRating + this.amount);
         } else return;
 		if (this.positive) {
             gameLog.add(getString("increased-" + this.type + "-rating").replace("%player", p.name).replace("%amount", this.amount), p, 1);
@@ -124,6 +134,19 @@ function GotoCard(name, index) {
 		gameLog.add(getString("player-got").replace("%player", p.name).replace("%thing", this.ticketName + "-title"), p, 1);
 		updateTickets();
 	}
+}
+function ChangePartyOfferCard(index) {
+	this.text = getString("change-party" + index);
+	this.randomize = () => {};
+	this.action = function(player) {
+		player.addTicket(this.ticketName);
+		gameLog.add(getString("player-changed-party").replace("%player", p.name).replace("%partyName", this.ticketName + "-title"), p, 1);
+		updateTickets();
+	}
+}
+function Lobby(name, bonuses) {
+    this.name = name;
+	this.bonuses = bonuses;
 }
 
 function Group(name) {
@@ -298,16 +321,16 @@ square[47] = new Bill("piar-create", 11, [
 var communityChestCards = [];
 var chanceCards = [];
 
-communityChestCards.push(new TicketCard("amendCard", 1));
+communityChestCards.push(new TicketCard("ownCard", 1));
 /*for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new MoneyCard(i, true));
 	chanceCards.push(new MoneyCard(i, true));
 	chanceCards.push(new MoneyCard(i, false));
 }
 for (var i = 1; i <= 1; i++) {
-    communityChestCards.push(new TicketCard("amendCard", i));
-	chanceCards.push(new TicketCard("amendCard", i));
-	chanceCards.push(new ActionCard("amendCard", i));
+    communityChestCards.push(new TicketCard("ownCard", i));
+	chanceCards.push(new TicketCard("ownCard", i));
+	chanceCards.push(new ActionCard("ownCard", i));
 }
 for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("jailCard", i));
@@ -342,7 +365,9 @@ chanceCards.push(new GotoCard(i, "law"));
 chanceCards.push(new GotoCard(i, "jail"));
 chanceCards.push(new GotoCard(i, "vacation"));
 chanceCards.push(new GotoCard(i, "meeting"));
-chanceCards.push(new GotoCard(i, "lobby"));*/
+chanceCards.push(new GotoCard(i, "lobby"));
+chanceCards.push(new ChangePartyOfferCard(i));
+*/
 
 function Party(text, difficulty, groupsReaction, specialization) {
     this.text = text;
@@ -357,25 +382,54 @@ function Party(text, difficulty, groupsReaction, specialization) {
 	for (var i = 0; i < specialization.length; i++) {
         this.specialization.push(groups[specialization[i]]);
     }
-	
+	this.startPeopleRating = 50;
 	
 	switch (difficulty) {
         case 1: {
-			this.partyFee = 20;
+			this.fee = 20;
+			this.maxPeopleRating = 100;
+			this.maxAssemblyRating = 100;
+			this.lobbyPayment = 25;
+			this.startAssemblyRating = 50;
+			this.lobbyRollBarrier = 3;
 		} break;
 		case 2: {
-			this.partyFee = 50;
+			this.fee = 50;
+			this.maxPeopleRating = 90;
+			this.maxAssemblyRating = 80;
+			this.lobbyPayment = 20;
+			this.startAssemblyRating = 40;
+			this.lobbyRollBarrier = 4;
 		} break;
 		case 3: {
-			this.partyFee = 100;
+			this.fee = 100;
+			this.maxPeopleRating = 80;
+			this.maxAssemblyRating = 60;
+			this.lobbyPayment = 15;
+			this.startAssemblyRating = 30;
+			this.lobbyRollBarrier = 4;
 		} break;
 		case 4: {
-			this.partyFee = 200;
+			this.fee = 150;
+			this.maxPeopleRating = 70;
+			this.maxAssemblyRating = 40;
+			this.lobbyPayment = 10;
+			this.startAssemblyRating = 20;
+			this.lobbyRollBarrier = 5;
 		} break;
 		case 5: {
-			this.partyFee = 300;
+			this.fee = 200;
+			this.maxPeopleRating = 60;
+			this.maxAssemblyRating = 20;
+			this.lobbyPayment = 5;
+			this.startAssemblyRating = 10;
+			this.lobbyRollBarrier = 5;
 		} break;
     }
+	
+	this.lobbyAddition = function(dice){
+		return dice - this.lobbyRollBarrier + ((dice >= this.lobbyRollBarrier) ? 1 : 0);
+	}
 }
 
 var players = [];
@@ -398,10 +452,21 @@ players[14] = new Party("nationalist",       5, [ 1,  1,  1,  1,   -1, -1,    1,
 players[15] = new Party("libertartian",      5, [ 1,  1,  1,  1,    1,  1,    1,  1, -1,  1,    1,  1], [5]);
 players[16] = new Party("marxist",           5, [-1,  1,  1,  1,    1,  1,    1, -1,  1, -1,    1, -1], [3]);
 
+var rulingParty = players[0];
+
 var difficultiesNames = ['easy', 'normal', 'hard', 'very hard', 'impossible']
 
 var startPayment = 450;
 
 var moneySign = ["", "к ₽"];
 
-var lobbyTypes = ['interior', 'soe', 'local', 'business'];
+var lobbyLevelLength = 5;
+var lobbyProgressLength = 21;
+var lobbyTypes = [
+	new Lobby('security', [2, 7, 10]),
+	new Lobby('soe', [1, 4, 9]),
+	new Lobby('executive', [3, 6, 11]),
+	new Lobby('business', [0, 5, 8])
+];
+
+var lobbyLength = 20;

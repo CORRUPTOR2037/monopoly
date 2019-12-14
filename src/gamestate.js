@@ -7,8 +7,12 @@ function GameState() {
 	var doublecount = 0;
 
 	this.rollDice = function() {
-		die1 = Math.floor(Math.random() * 6) + 1;
-		die2 = Math.floor(Math.random() * 6) + 1;
+		return Math.floor(Math.random() * 6) + 1;
+	}
+	
+	this.rollDices = function() {
+		die1 = this.rollDice();
+		die2 = this.rollDice();
 		areDiceRolled = true;
 		if (die1 == die2) {
             doublecount++;

@@ -1,6 +1,7 @@
 // The purpose of this AI is not to be a relistic opponant, but to give an example of a vaild AI player.
 function AITest(p) {
 	this.alertList = "";
+	this.origin = p;
 
 	// This variable is static, it is not related to each instance.
 	if (this.constructor.count == undefined) {
@@ -124,43 +125,8 @@ function AITest(p) {
 	// This function is called every time the AI lands on a square. The purpose is to allow the AI to manage property and/or initiate trades.
 	// Return: boolean: Must return true if and only if the AI proposed a trade.
 	this.onLand = function() {
-		console.trace();
 		console.log("onLand");
-		/*var proposedTrade;
-		var property = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var railroadIndexes = [5, 15, 25, 35];
-		var requestedRailroad;
-		var offeredUtility;
-		var s;
-
-		// If AI owns exactly one utility, try to trade it for a railroad.
-		for (var i = 0; i < 4; i++) {
-			s = square[railroadIndexes[i]];
-
-			if (s.owner !== 0 && s.owner !== p.index) {
-				requestedRailroad = s.index;
-				break;
-			}
-		}
-
-		if (square[12].owner === p.index && square[28].owner !== p.index) {
-			offeredUtility = 12;
-		} else if (square[28].owner === p.index && square[12].owner !== p.index) {
-			offeredUtility = 28;
-		}
-
-		if (utilityForRailroadFlag && game.getDie(1) !== game.getDie(2) && requestedRailroad && offeredUtility) {
-			utilityForRailroadFlag = false;
-			property[requestedRailroad] = -1;
-			property[offeredUtility] = 1;
-
-			proposedTrade = new Trade(p, player[square[requestedRailroad].owner], 0, property, 0, 0)
-
-			game.trade(proposedTrade);
-			return true;
-		}
-
-		return false;*/
+		
 	}
 
 	// Determine whether to post bail/use get out of jail free card (if in possession).
@@ -193,6 +159,15 @@ function AITest(p) {
 			}
 		}*/
 
+	}
+	
+	var self = this;
+	this.rollLobby = function(){
+		lobbyTypes.forEach(function(key){
+			key = key.name;
+            if (Math.random() > 0.5) 
+				self.origin.setLobbyRating(key, self.origin.lobby[key] + self.origin.party.lobbyAddition(game.rollDice()));
+        });
 	}
 
 	// Determine what to bid during an auction.

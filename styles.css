@@ -127,6 +127,10 @@ body {
     border-radius: 5px;
     padding: 5px;
     border: 0px solid black;
+    cursor: move;
+}
+.panel > * {
+    cursor: auto;
 }
 
 #control {
@@ -214,6 +218,7 @@ body {
     margin-right: 0px;
     height: 36px;
     line-height: 14px;
+    min-width: 70px;
 }
 
 #control button {
@@ -421,11 +426,13 @@ body {
 	user-select: none;
 }
 
-#popup-text {
-	overflow-x: auto;
+.alert-text {
     text-align: center;
 }
 
+#popup-text div {
+    margin-top: 10px;
+}
 #popup-text div > *  {
 	margin: 5px;
 }
@@ -472,7 +479,7 @@ body {
 }
 
 #stats {
-	max-width: 914px;
+	max-width: 940px;
 	min-width: 454px;
 	font-family: Arial, sans-serif;
 	font-size: 14px;
@@ -510,7 +517,7 @@ body {
     width: 100%;
 }
 
-#statsclose {
+.windowclose {
 	display: block;
 	position: absolute;
 	top: -24px;
@@ -660,19 +667,6 @@ body {
 	border: 2px solid black;
 	padding: 5px 10px;
 }
-.house {
-	width: 25px;
-	height: 19px;
-	vertical-align: middle;
-	float: right;
-}
-
-.hotel {
-	width: 26px;
-	height: 19px;
-	vertical-align: middle;
-	float: right;
-}
 
 .cell {
 	position: relative;
@@ -683,6 +677,20 @@ body {
 	background-repeat: no-repeat;
 	background-size: auto 40px;
     overflow: hidden;
+}
+
+.cell.non-selectable {
+    opacity: 0.1;
+}
+.cell.selectable {
+    opacity: 0.7;
+}
+.cell.hovered {
+    opacity: 1 !important;
+}
+.cell.selected {
+    opacity: 1 !important;
+    box-shadow: 0px 0px 20px #8dff80;
 }
 
 .cell-amandments {
@@ -965,7 +973,6 @@ body {
     padding-left: 10px;
     text-align: left;
     padding-bottom: 10px;
-    font-weight: 
 }
 
 .statscellheader {
@@ -982,6 +989,7 @@ body {
 	font-weight: bold;
     text-align: left;
 	font-size: 24px;
+
 }
 
 .trade-cell {
@@ -1083,16 +1091,18 @@ ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::befo
     width: 32px;
     height: 21px;
     display: inline-block;
+    opacity: 0.5;
 }
 a.card {
     cursor: pointer;
+    opacity: 1;
 }
 
 .jailCard {
     background-image: url(images/jailCardIcon.png);
 }
-.amendCard {
-    background-image: url(images/amendCardIcon.png);
+.ownCard {
+    background-image: url(images/ownCardIcon.png);
 }
 .moveBillCard {
     background-image: url(images/moveBillCardIcon.png);
@@ -1102,4 +1112,91 @@ a.card {
 }
 .gotoCard {
     background-image: url(images/gotoCardIcon.png);
+}
+
+
+#lobbyscreen {
+    border-spacing: 0px;
+    position: absolute;
+    top: 255px;
+    left: 0px;
+    width: 100%;
+    display: none;
+    background-color: transparent;
+    z-index: 10;
+    -webkit-user-select: none;
+    user-select: none;
+}
+#lobbyscreen .panel {
+    margin: auto;
+    padding: 20px;
+    top: 0px;
+    left: 0px;
+    display: table;
+    padding: 30px;
+    position: relative;
+}
+#lobbyscreen table {
+    background-color: #222;
+    padding: 5px;
+    float: left;
+}
+#lobbyscreen td {
+    padding: 0px;
+    vertical-align: top;
+}
+#lobbyscreen td div {
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+}
+#lobbyscreen th span{
+    width: 30px;
+    text-align: center;
+    display: block;
+}
+#lobbyscreen td div.last {
+    margin-right: 8px;
+}
+#lobbyscreen td.selected {
+    cursor: pointer;
+}
+#lobbyscreen td.selected.used {
+    cursor: not-allowed;
+}
+#lobbyscreen td.selected div:before {
+    content: ' ';
+    display: block;
+    width: 20px;
+    height: 20px;
+    opacity: 0.35;
+    border-radius: 6px;
+    background: black;
+    top: 5px;
+    left: 5px;
+    position: relative;
+}
+#lobbyscreen .level-description {
+    margin-top: 7px;
+    padding: 5px;
+    border-radius: 5px;
+    color: white;
+    display: block;
+    max-width: 148px;
+}
+#lobbyscreen .positive {
+    background-color: #243a24;
+}
+#lobbyscreen .negative {
+    background-color: #551919;
+}
+
+.protected:before {
+    content: ' ';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: url(images/shieldIcon.png);
+    opacity: 0.6;
+    background-size: 100% 100%;
 }

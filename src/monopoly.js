@@ -30,6 +30,13 @@ Math.range = function(min, max){
 	return Math.floor(Math.random() * (max - min)) + min;
 }
 
+function sort_deck(array) {
+	array.index = 0;
+	array.deck = [];
+	for (var i = 0; i < array.length; i++) array.deck[i] = i;
+	array.deck.sort(function() {return Math.random() - 0.5;});
+}
+
 
 // Game Panels
 
@@ -88,6 +95,18 @@ function Alert() {
 		}).focus();
 		this.fadeIn();
 	}
+	this.showRoll = function(HTML, action) {
+		var dice = game.rollDice();
+		this.text.html(
+			'<span style="display: block">' + getString("you-rolled").replace("%value", dice) + "</span>" + 
+			'<img id="dieAlert" title="Die" class="die die-no-img"></div>' + HTML +
+			"<div><button id='popupclose'>" + getString("OK") + "</button></div>"
+		);
+		updateDice($('#dieAlert'), dice);
+		
+		$("#popupclose").on("click", this.fadeOut).on('click', () => action(dice)).focus();
+		this.fadeIn();
+	}
 	this.showChoose = function(HTML, buttons, actions) {
 		this.text.html(HTML);
 		
@@ -143,7 +162,9 @@ function Buttons() {
 	this.buy = $("#buy-menu-item");
 	this.manage = $("#manage-menu-item");
 	
+	this.lastButtonsConfig = [];
 	this.update = function(items) {
+		this.lastButtonsConfig = items;
 		Array.from($("#menu .menu-item")).forEach(function(i){
 			i.classList.add("hidden");
 		});
@@ -168,6 +189,13 @@ function Buttons() {
 		this.update();
 		this.rollDices.show();
 		this.endTurn.hide();
+	}
+	this.savedButtons = [];
+	this.saveButtons = function(){
+		this.savedButtons = this.lastButtonsConfiguration;
+	}
+	this.loadButtons = function(){
+		this.update(this.savedButtons);
 	}
 }
 var buttons = new Buttons();
@@ -212,8 +240,10 @@ function Stats() {
 			HTML += "<span class='statscellheader icon money-icon left'></span><span class='statscellheader'>" + getString('money-header') + ": " + wrapMoney(p.money) + "</span>";
 			
 			// Rating info
-			HTML += "<span class='statscellheader icon people-icon left'></span><span class='statscellheader'>" + getString('people-rating-header') + ": " + p.peopleRating + "%" + "</span>";
-			HTML += "<span class='statscellheader icon assembly-icon left'></span><span class='statscellheader'>" + getString('assembly-rating-header') + ": " + p.assemblyRating + "%" + "</span>";
+			HTML += "<span class='statscellheader icon people-icon left'></span><span class='statscellheader'>" +
+				getString('people-rating-header') + ": " + p.peopleRating + "/" + p.maxPeopleRating() + "</span>";
+			HTML += "<span class='statscellheader icon assembly-icon left'></span><span class='statscellheader'>" +
+				getString('assembly-rating-header') + ": " + p.assemblyRating + "/" + p.maxAssemblyRating() + "</span>";
 			
 			// Lobby info
 			HTML += "<span class='statscellheader'>" + getString('lobby-header') + "</span><ul class='stats-lobby-rating'>";
@@ -237,7 +267,7 @@ function Stats() {
 		});
 	}
 	$("#viewstats").on("click", this.show);
-	$("#statsclose, #statsbackground").on("click", function() {
+	$("#statsclose").on("click", function() {
 		$("#statswrap").hide();
 		$("#statsbackground").fadeOut(400);
 	});
@@ -245,6 +275,79 @@ function Stats() {
 var stats = new Stats();
 
 
+
+function LobbyScreen() {
+    this.object = $("#lobbyscreen");
+	
+	this.usedOnThisTurn = [];
+	this.show = function(){
+		var currentPlayer = player[turn];
+		var rows = $("#lobbyscreen tr");
+		for (var j = 1; j < rows.length-1; j++) {
+			var cells = rows[j].getElementsByTagName("td");
+			for(var i = 0; i < cells.length; i++){
+				cells[i].classList.remove('selected');
+				cells[i].removeAttribute('onclick');
+				var key = lobbyTypes[j-1].name;
+				if (currentPlayer.lobby[key] == i) {
+                    cells[i].classList.add('selected');
+					if (!this.usedOnThisTurn.includes(key)) {
+						cells[i].onclick = function(){
+							var target = event.target.getAttribute('name');
+							alert.showRoll(getString("lobby-you-need-roll").replace("%value", currentPlayer.party.lobbyRollBarrier), function(value){
+								lobbyScreen.usedOnThisTurn.push(target);
+								currentPlayer.setLobbyRating(target, currentPlayer.lobby[target] + currentPlayer.party.lobbyAddition(value));
+								lobbyScreen.show();
+							});
+						};
+					} else {
+						cells[i].classList.add('used');
+					}
+                }
+			}
+		}
+		$("#popupbackground").fadeIn(400, function() {
+			$("#lobbyscreen").show();
+		});
+	};
+	this.hide = function(){
+		$("#lobbyscreen").hide();
+		$("#popupbackground").fadeOut(400);
+	};
+	
+	var HTML = "<tr>";
+	for (var j = 0; j < lobbyProgressLength; j++) {
+		HTML += '<th><span>' + j + '</span></th>';
+	}
+	HTML += "</tr>";
+	for (var i = 0; i < lobbyTypes.length; i++) {
+        HTML += "<tr>";
+		for (var j = 0; j < lobbyProgressLength; j++) {
+			var cl = lobbyTypes[i].name;
+			if (j % lobbyLevelLength == lobbyLevelLength - 1) {
+				cl += " last";
+			}
+            HTML += '<td name="' + lobbyTypes[i].name + '"><div class="' + cl + '"></div></td>';
+		}
+		HTML += '<td><span class="lobby-title">' + getString("lobby-type-" + lobbyTypes[i].name) + '</span></td>'
+		HTML += "</tr>";
+    }
+	HTML += "<tr>";
+	for (var j = 0, i = 0; j < lobbyProgressLength; j += lobbyLevelLength, i++) {
+		HTML += '<td colspan=' + lobbyLevelLength + '>';
+		HTML += '<span class="level-description positive">' + getString('lobby-level-descriptionPos-' + i) + '</span>';
+		HTML += '<span class="level-description negative">' + getString('lobby-level-descriptionNeg-' + i) + '</span>';
+		HTML += '</td>';
+	}
+	HTML += "</tr>";
+	this.object.find("table").html(HTML);
+	
+	let self = this;
+	$("#lobbyclose").on("click", function() {
+		self.hide();
+	});
+}
+var lobbyScreen = new LobbyScreen();
 /*
  *
  * UPDATE MAP
@@ -276,55 +379,27 @@ function updateTickets() {
 	Object.keys(currentPlayer.tickets).forEach(function(key){
 		if (currentPlayer.tickets[key] > 0) {
 			html += "<a class='card " + key + "' title='" + getString(key + "-title") + "' onclick='useTicket(\"" + key + "\")'></a>";
+			html += "<span class='cardcount'>" + currentPlayer.tickets[key] + "</span>";
 		} else {
 			html += "<span class='card " + key + "' title='" + getString(key + "-title") + "'></span>";
 		}
-		html += "<span class='cardcount'>" + currentPlayer.tickets[key] + "</span><br>";
+		html += "<br>"
 	});
     $("#player-tickets").html(html);
 }
 
-function updateDice() {
-	var die0 = game.getDie(1);
-	var die1 = game.getDie(2);
+function updateDices() {
+	updateDice($("#die0"), game.getDie(1));
+	updateDice($("#die1"), game.getDie(2));
+}
 
-	$("#die0").show();
-	$("#die1").show();
+function updateDice(node, value) {
+	node.show();
 
-	if (document.images) {
-		var element0 = document.getElementById("die0");
-		var element1 = document.getElementById("die1");
+	node.removeClass("die-no-img");
+	node.prop('title', getString("dice-title").replace("%value", value));
 
-		element0.classList.remove("die-no-img");
-		element1.classList.remove("die-no-img");
-
-		element0.title = "Die (" + die0 + " spots)";
-		element1.title = "Die (" + die1 + " spots)";
-
-		if (element0.firstChild) {
-			element0 = element0.firstChild;
-		} else {
-			element0 = element0.appendChild(document.createElement("img"));
-		}
-
-		element0.src = "images/Die_" + die0 + ".png";
-		element0.alt = die0;
-
-		if (element1.firstChild) {
-			element1 = element1.firstChild;
-		} else {
-			element1 = element1.appendChild(document.createElement("img"));
-		}
-
-		element1.src = "images/Die_" + die1 + ".png";
-		element1.alt = die0;
-	} else {
-		document.getElementById("die0").textContent = die0;
-		document.getElementById("die1").textContent = die1;
-
-		document.getElementById("die0").title = "Die";
-		document.getElementById("die1").title = "Die";
-	}
+	node.prop('src', "images/Die_" + value + ".png");
 }
 
 function updateOwned() {
@@ -341,7 +416,7 @@ function updateOwned() {
             count++;
         }
 		
-		$("#cell" + i + "owner").attr('class', "cell-owner " + (squareItem.owner > 0 ? player[squareItem.owner].style : "hidden"));
+		$("#cell" + i + "owner").attr('class', "cell-owner " + (squareItem.owner > 0 ? player[squareItem.owner].style : "hidden") + (squareItem.forceMove ? " protected" : ""));
 		$("#cell" + i + " .cell-spec").attr('class', "cell-spec" + (currentPlayer.party.specialization.includes(squareItem.group) ? " active" : ""));
 		
 		var array = $("#" + squareItem.cell.id + " .cell-card div");
@@ -379,6 +454,51 @@ function updateOwned() {
 		getString("review-bills-count") + count + " / " + getString("accepted-bills-count") + accepted + " / " + getString("rejected-bills-count") + currentPlayer.stats["rejected"];
 }
 
+var selectCellCallback = undefined;
+function selectBill(p, criterion, action) {
+	var properBills = [];
+	for (var i = 0; i < square.length; i++){
+		if (square[i].type == 'bill' && criterion(square[i])) {
+            properBills.push(square[i]);
+        }
+	}
+	if (p.isAI) {
+        sort_deck(properBills);
+		action(properBills[properBills.deck[0]]);
+    } else {
+		for (var i = 0; i < square.length; i++){
+			square[i].cell.classList.add('non-selectable');
+		}
+		for (var i = 0; i < properBills.length; i++){
+			properBills[i].cell.classList.remove('non-selectable');
+			properBills[i].cell.classList.add('selectable');
+		}
+		selectCellCallback = action;
+		buttons.saveButtons();
+		buttons.update(["confirm-selection", "cancel-selection"]);
+	}
+}
+function confirmSelection() {
+    for (var i = 0; i < square.length; i++){
+		if (square[i].cell.classList.contains('selected')) {
+            selectCellCallback(square[i]);
+			cancelSelection();
+			return;
+        }
+	}
+	alert.showAccept(getString("nothing-selected"), null);
+}
+function cancelSelection() {
+    buttons.loadButtons();
+	selectCellCallback = undefined;
+	for (var i = 0; i < square.length; i++){
+		square[i].cell.classList.remove('non-selectable');
+		square[i].cell.classList.remove('selectable');
+		square[i].cell.classList.remove('hovered');
+		square[i].cell.classList.remove('selected');
+	}
+}
+
 function getCard() {
 	var p = player[turn];
 	var s = square[p.position];
@@ -399,37 +519,6 @@ function getCard() {
 	}
 
 	return card;
-}
-
-function chanceAction(chanceIndex) {
-	var p = player[turn]; // This is needed for reference in action() method.
-
-	// $('#popupbackground').hide();
-	// $('#popupwrap').hide();
-	chanceCards[chanceIndex].action(p);
-
-	updateMoney();
-
-	if (chanceIndex !== 15 && !p.human) {
-		p.AI.alertList = "";
-		nextTurn();
-	}
-}
-
-function addamount(amount, cause) {
-	var p = player[turn];
-
-	p.money += amount;
-
-	gameLog.add(p.name + " received $" + amount + " from " + cause + ".", p, +1);
-}
-
-function subtractamount(amount, cause) {
-	var p = player[turn];
-
-	p.pay(amount, 0);
-
-	gameLog.add(p.name + " lost $" + amount + " from " + cause + ".", p, -1);
 }
 
 function gotojail() {
@@ -455,166 +544,6 @@ function gotojail() {
 	}
 }
 
-function gobackthreespaces() {
-	var p = player[turn];
-
-	p.position -= 3;
-
-	land();
-}
-
-function payeachplayer(amount, cause) {
-	var p = player[turn];
-	var total = 0;
-
-	for (var i = 1; i < player.length; i++) {
-		if (i != turn) {
-			player[i].money += amount;
-			total += amount;
-			creditor = p.money >= 0 ? i : creditor;
-
-			p.pay(amount, creditor);
-		}
-	}
-
-	gameLog.add(p.name + " lost $" + total + " from " + cause + ".", p, -1);
-}
-
-function collectfromeachplayer(amount, cause) {
-	var p = player[turn];
-	var total = 0;
-
-	for (var i = 1; i < player.length; i++) {
-		if (i != turn) {
-			money = player[i].money;
-			if (money < amount) {
-				p.money += money;
-				total += money;
-				player[i].money = 0;
-			} else {
-				player[i].pay(amount, turn);
-				p.money += amount;
-				total += amount;
-			}
-		}
-	}
-
-	gameLog.add(p.name + " received $" + total + " from " + cause + ".", p, 1);
-}
-
-function streetrepairs(houseprice, hotelprice) {
-	var cost = 0;
-	for (var i = 0; i < cellsCount; i++) {
-		var s = square[i];
-		if (s.owner == turn) {
-			if (s.hotel == 1)
-				cost += hotelprice;
-			else
-				cost += s.house * houseprice;
-		}
-	}
-
-	var p = player[turn];
-
-	if (cost > 0) {
-		p.pay(cost, 0);
-
-		// If function was called by Community Chest.
-		if (houseprice === 40) {
-			gameLog.add(p.name + " lost $" + cost + " to Community Chest.", p, -1);
-		} else {
-			gameLog.add(p.name + " lost $" + cost + " to Chance.", p, -1);
-		}
-	}
-
-}
-
-function payfifty() {
-	var p = player[turn];
-
-	document.getElementById("jail").style.border = '1px solid black';
-	document.getElementById("cell11").style.border = '2px solid ' + p.color;
-
-	$("#landed").hide();
-	doublecount = 0;
-
-	p.jail = false;
-	p.jailroll = 0;
-	p.position = 10;
-	p.pay(50, 0);
-
-	gameLog.add(p.name + " paid the $50 fine to get out of jail.", p, -1);
-	updateMoney();
-	updatePosition();
-}
-
-function buyHouse(index) {
-	var sq = square[index];
-	var p = player[sq.owner];
-	var houseSum = 0;
-	var hotelSum = 0;
-
-	if (p.money - sq.houseprice < 0) {
-		if (sq.house == 4) {
-			return false;
-		} else {
-			return false;
-		}
-
-	} else {
-		for (var i = 0; i < cellsCount; i++) {
-			if (square[i].hotel === 1) {
-				hotelSum++;
-			} else {
-				houseSum += square[i].house;
-			}
-		}
-
-		if (sq.house < 4) {
-			if (houseSum >= 32) {
-				return false;
-
-			} else {
-				sq.house++;
-				gameLog.add(p.name + " placed a house on " + sq.name + ".", p);
-			}
-
-		} else {
-			if (hotelSum >= 12) {
-				return;
-
-			} else {
-				sq.house = 5;
-				sq.hotel = 1;
-				gameLog.add(p.name + " placed a hotel on " + sq.name + ".", p);
-			}
-		}
-
-		p.pay(sq.houseprice, 0);
-
-		updateOwned();
-		updateMoney();
-	}
-}
-
-function sellHouse(index) {
-	sq = square[index];
-	p = player[sq.owner];
-
-	if (sq.hotel === 1) {
-		sq.hotel = 0;
-		sq.house = 4;
-		gameLog.add(p.name + " sold the hotel on " + sq.name + ".", p);
-	} else {
-		sq.house--;
-		gameLog.add(p.name + " sold a house on " + sq.name + ".", p);
-	}
-
-	p.money += sq.houseprice * 0.5;
-	updateOwned();
-	updateMoney();
-}
-
 function buyChooseSide(playerIndex, bill, cost) {
 	if (!playerIndex) {
         p = player[turn];
@@ -623,7 +552,7 @@ function buyChooseSide(playerIndex, bill, cost) {
 		cost = bill.price().buy;
     }
 	if (!player[playerIndex].AI) {
-        alert.showChoose(getString("buy-choose-side-text"), bill.sides, function(index){
+        alert.showChoose(getString("buy-choose-side-text").replace("%player", p.name).replace("%bill", bill.uiName), bill.sides, function(index){
 			buy(playerIndex, bill, cost, 1 - index);
 		});
     } else {
@@ -640,7 +569,7 @@ function buy(playerIndex, bill, cost, direction) {
 		bill.owner = playerIndex;
 		bill.direction += direction;
 		bill.moveState();
-		gameLog.add(getString("buy-message").replace("%player", p.name).replace("%name", bill.uiName).replace("%price", cost), p, -1);
+		gameLog.add(getString("buy-message").replace("%player", p.name).replace("%bill", bill.uiName).replace("%price", cost), p, -1);
 
 		updateOwned();
 
@@ -703,69 +632,41 @@ function amend() {
 	this.endTurn.show();
 }
 
-
-function makeAuction(bill){
-	var auctionData = { 'index': 0, 'price': 0, 'next': 0, 'players': []};
-	for (var i = 1; i < player.length; i++) 
-		if (i != turn) auctionData['players'].push(i);
-	
-	makeAuctionRound(bill, auctionData);
+function askSay() {
+	var bill = square[player[turn].position]; 
+	if (bill.state == 0) {
+		sayChooseSide(turn, bill);
+	}
 }
 
-function makeAuctionRound(bill, auctionData) {
-	if (auctionData['next'] >= auctionData['players'].length) {
-        auctionData['next'] = 0;
+function sayChooseSide(playerIndex, bill) {
+	if (!playerIndex) {
+		playerIndex = turn;
+		bill = square[player[playerIndex]]; 
     }
-	var playerIndex = auctionData['players'][auctionData['next']];
-	if ((auctionData['players'].length == 1 && auctionData['index'] == playerIndex) || auctionData['players'].length == 0) {
-		if (auctionData['price'] != 0) {
-            buyChooseSide(auctionData['index'], bill, auctionData['price']);
-        }
-		return;
-    }
-	
-	auctionData['next']++;
-	
-	
 	var p = player[playerIndex];
-		
-	if (p.AI) {
-			
-            var offer = p.AI.bid(bill, auctionData['price']);
-			if (offer > auctionData['price']) {
-                auctionData['index'] = playerIndex;
-				auctionData['price'] = offer;
-            } else {
-				auctionData['players'] = auctionData['players'].filter(function(item) {
-					return item !== playerIndex
-				});
-				auctionData['next']--;
-			}
-			makeAuctionRound(bill, auctionData);
-			
+	if (!player[playerIndex].AI) {
+        alert.showChoose(getString("say-choose-side-text").replace("%player", p.name).replace("%bill", bill.uiName), bill.sides, function(index){
+			say(playerIndex, bill, 1 - index);
+		});
     } else {
-			
-			alert.showInput(
-				'<h2>' + getString('auction') + '</h2>' + 
-				getString("auction-how-much-message").replace("%player", p.name).replace("%place", bill.uiName).replace("%last", auctionData['price']),
-				
-				function(value){
-					value = parseInt(value);
-					if (value == value && value > auctionData['price'] && value <= p.money) {
-                        auctionData['index'] = playerIndex;
-						auctionData['price'] = value;		
-                    } else {
-						auctionData['players'] = auctionData['players'].filter(function(item) {
-							return item !== playerIndex;
-						});
-						auctionData['next']--;
-					}
-					makeAuctionRound(bill, auctionData);
-				}
-			);
-			
-    }
+		say(playerIndex, bill, player[playerIndex].party.groupsReaction[bill.style]);
+	}
+}
 
+function say(playerIndex, bill, direction) {
+	var p = player[playerIndex];
+	gameLog.add(getString("say-message").replace("%player", p.name).replace("%bill", bill.uiName).replace("%action", getString(bill.sides[1 - direction])), p);
+	var ratingAmount = direction * 2;
+	p.setPeopleRating(p.peopleRating + ratingAmount);
+	if (direction > 0) {
+        gameLog.add(getString("increased-people-rating").replace("%player", p.name).replace("%amount", ratingAmount), p);
+    } else if (direction < 0) {
+		gameLog.add(getString("decreased-people-rating").replace("%player", p.name).replace("%amount", -ratingAmount), p);
+	}
+	
+	updateMoney();	
+	nextTurn();
 }
 
 
@@ -787,11 +688,11 @@ function landOnBill(bill, playerIndex) {
 				if (p.AI.buyProperty(p.position)) {
 					buyChooseSide(playerIndex, bill, bill.price().buy);
 				} else {
-					makeAuction();
+					say()
 				}
 				updateOwned();
 			} else {
-				buttons.update(["buy", "pass"]);
+				buttons.update(["buy", "say"]);
 			}
 			return;
 		}
@@ -819,7 +720,6 @@ function landOnBill(bill, playerIndex) {
 function takeCard(s, playerIndex) {
 	var p = player[playerIndex];
 	var prizeCard = getCard();
-	console.log(prizeCard);
 	prizeCard.randomize(p);
     if (p.human) {
 		alert.showAccept(prizeCard.text(),  () => prizeCard.action(p));
@@ -829,8 +729,14 @@ function takeCard(s, playerIndex) {
 	buttons.performEndTurn();
 }
 
-function lobby(square, player) {
-    nextTurn();
+function lobby(square, playerIndex) {
+	var p = player[playerIndex];
+	if (p.isAI) {
+        p.AI.rollLobby();
+		nextTurn();
+    } else {
+		buttons.update(["lobby", "end-turn"]);
+	}
 }
 function corruptionVisit(square, player) {
     nextTurn();
@@ -865,9 +771,7 @@ function useTicket(type) {
         alert.showAccept(getString(type + "-card-cant-be-used"));
         return;
     }
-	p.removeTicket(type);
 	updateTickets();
-	gameLog.add(getString("player-used").replace("%player", p.name).replace("%thing", getString(type + "-title")), p);
 	performAction(p, type);
 }
 
@@ -888,7 +792,7 @@ function canPerformAction(p, type) {
             }
 			return false;
 		} break;
-		case "amendCard": {
+		case "ownCard": {
 			for (var i = 0; i < square.length; i++) {
                 if (square[i].state > 0) return true;
             }
@@ -901,15 +805,21 @@ function canPerformAction(p, type) {
 function performAction(p, type) {
     switch (type) {
         case "jailCard": {
-			
+			getOutOfJail();
+			afterPerformAction(p, type);
 		} break;
 		case "moveBillCard": {
-			
+			selectBill(p, function(cell){
+				return player[cell.owner] == p && cell.state > 0;
+			}, function(cell){
+				cell.forceMove = true;
+				afterPerformAction(p, type);
+			});
 		} break;
 		case "createBillCard": {
 			
 		} break;
-		case "amendCard": {
+		case "ownCard": {
 			
 		} break;
 		case "gotoCard": {
@@ -917,7 +827,22 @@ function performAction(p, type) {
 		} break;
     }
 }
+function afterPerformAction(p, type) {
+	gameLog.add(getString("player-used").replace("%player", p.name).replace("%thing", getString(type + "-title")), p);
+	p.removeTicket(type);
+	updateTickets();
+	updateOwned();
+}
 
+function getOutOfJail() {
+    var currentPlayer = player[turn];
+	currentPlayer.jail = false;
+	if (currentPlayer.isAI) {
+        roll();
+    } else {
+		buttons.rollDices.show();
+	}
+}
 /*
  *
  * HANDLING TURNS
@@ -953,7 +878,7 @@ function roll() {
 		buttons.rollDices.focus();
 	}
 
-	game.rollDice();
+	game.rollDices();
 	var die1 = game.getDie(1);
 	var die2 = game.getDie(2);
 	
@@ -963,7 +888,7 @@ function roll() {
 	);
 
 	if (die1 == die2 && !currentPlayer.jail) {
-		updateDice(die1, die2);
+		updateDices();
 
 		if (game.doublecount < 3) {
 			buttons.rollDices.attr('value', getString("roll-again"));
@@ -989,11 +914,12 @@ function roll() {
 	updatePosition();
 	updateMoney();
 	updateOwned();
+	lobbyScreen.usedOnThisTurn = [];
 
 	if (currentPlayer.jail === true) {
 		currentPlayer.jailroll++;
 
-		updateDice(die1, die2);
+		updateDices();
 		if (die1 == die2) {
 			document.getElementById("jail").style.border = "1px solid black";
 			document.getElementById("cell11").style.border = "2px solid " + p.color;
@@ -1035,7 +961,7 @@ function roll() {
 
 
 	} else {
-		updateDice(die1, die2);
+		updateDices();
 
 		// Move player
 		currentPlayer.position += die1 + die2;
@@ -1077,6 +1003,11 @@ function nextTurn() {
 	}
 }
 
+function openLobby() {
+	buttons.performEndTurn();
+	lobbyScreen.show();
+}
+
 function play() {
 	turn++;
 	if (turn >= player.length) {
@@ -1084,6 +1015,15 @@ function play() {
 	}
 
 	var currentPlayer = player[turn];
+	if (currentPlayer.missMove > 0) {
+        currentPlayer.missMove--;
+		if (!currentPlayer.isAI) {
+            alert.showAccept(getString("miss-move"), play);
+        } else {
+			play();
+		}
+		return;
+    }
 	game.resetDice();
 
 	gameLog.add(getString("it-is-turn").replace("%player", currentPlayer.name), currentPlayer);
@@ -1188,12 +1128,6 @@ function setup() {
 
 	
 	// Shuffle decks
-	function sort_deck(array) {
-		array.index = 0;
-		array.deck = [];
-		for (var i = 0; i < array.length; i++) array.deck[i] = i;
-		array.deck.sort(function() {return Math.random() - 0.5;});
-    }
 	sort_deck(chanceCards);
 	sort_deck(communityChestCards);
 	
@@ -1215,8 +1149,8 @@ function setup() {
 	
 	for (var i = 0; i < square.length; i++) {
 		var point = square[i];
-		switch (point.style) {
-			case 'bill': point.onVisil = landOnBill; break;
+		switch (point.type) {
+			case 'bill': point.onVisit = landOnBill; break;
             case 'com-chest': point.onVisit = takeCard; break;
 			case 'lobby': point.onVisit = lobby; break;
 			case 'chance': point.onVisit = takeCard; break;
@@ -1225,6 +1159,7 @@ function setup() {
 			case 'meeting': point.onVisit = meeting; break;
 			case 'vacation': point.onVisit = vacation; break;
 			case 'new-session': point.onVisit = nextTurn; break;
+			default: console.log("error: unknown cell at " + i + ", " + point.type); break;
         }
 
     }
@@ -1328,11 +1263,22 @@ function setup() {
 
 	var drag, dragX, dragY, dragObj, dragTop, dragLeft;
 
-	$(".cell").on("mouseover", function(){
-		setEnlarge(this, "enlarge");
-	}).on("mouseout", function() {
+	$(".cell").on("mouseover", function(e){
+		if (selectCellCallback == undefined) {
+            setEnlarge(this, "enlarge");
+        } else {
+			if (this.classList.contains("selectable")) {
+				this.classList.add("hovered");
+            }
+		}
+		
+	}).on("mouseout", function(e) {
 		$("#enlarge").hide();
-
+		if (selectCellCallback != undefined) {
+			if (this.classList.contains("hovered")) {
+				this.classList.remove("hovered");
+            }
+		}
 	}).on("mousemove", function(e) {
 		var element = document.getElementById("enlarge");
 
@@ -1343,6 +1289,15 @@ function setup() {
 		}
 
 		element.style.left = (e.clientX + 10) + "px";
+	}).on("click", function(e){
+		if (selectCellCallback != undefined) {
+			if (this.classList.contains("selectable")) {
+				for (var i = 0; i < square.length; i++) {
+                    this.classList.remove("selected");
+                }
+				this.classList.add("selected");
+            }
+		}
 	});
 	
 	$("body").on("mousemove", function(e) {
@@ -1367,8 +1322,8 @@ function setup() {
 	$("body").on("mouseup", function() {
 		drag = false;
 	});
-	document.getElementById("statsdrag").onmousedown = function(e) {
-		dragObj = document.getElementById("stats");
+	$('.panel').on('mousedown', function(e) {
+		dragObj = this;
 		dragObj.style.position = "relative";
 
 		dragTop = parseInt(dragObj.style.top, 10) || 0;
@@ -1383,85 +1338,7 @@ function setup() {
 		}
 
 		drag = true;
-	};
-	
-	document.getElementById("popupdrag").onmousedown = function(e) {
-		dragObj = document.getElementById("popup");
-		dragObj.style.position = "relative";
-
-		dragTop = parseInt(dragObj.style.top, 10) || 0;
-		dragLeft = parseInt(dragObj.style.left, 10) || 0;
-
-		if (window.event) {
-			dragX = window.event.clientX;
-			dragY = window.event.clientY;
-		} else if (e) {
-			dragX = e.clientX;
-			dragY = e.clientY;
-		}
-
-		drag = true;
-	};
-
-	$("#mortgagebutton").click(function() {
-		var checkedProperty = getCheckedProperty();
-		var s = square[checkedProperty];
-
-		if (s.mortgage) {
-			if (player[s.owner].money < Math.round(s.price * 0.6)) {
-				alert.showAccept("<p>You need $" + (Math.round(s.price * 0.6) - player[s.owner].money) + " more to unmortgage " + s.name + ".</p>");
-
-			} else {
-				alert.showConfirm("<p>" + player[s.owner].name + ", are you sure you want to unmortgage " + s.name + " for $" + Math.round(s.price * 0.6) + "?</p>", function() {
-					unmortgage(checkedProperty);
-				});
-			}
-		} else {
-			alert.showConfirm("<p>" + player[s.owner].name + ", are you sure you want to mortgage " + s.name + " for $" + Math.round(s.price * 0.5) + "?</p>", function() {
-				mortgage(checkedProperty);
-			});
-		}
-
 	});
-
-	$("#buyhousebutton").on("click", function() {
-		var checkedProperty = getCheckedProperty();
-		var s = square[checkedProperty];
-		var p = player[s.owner];
-		var houseSum = 0;
-		var hotelSum = 0;
-
-		if (p.money < s.houseprice) {
-			if (s.house === 4) {
-				alert.showAccept("<p>You need $" + (s.houseprice - player[s.owner].money) + " more to buy a hotel for " + s.name + ".</p>");
-				return;
-			} else {
-				alert.showAccept("<p>You need $" + (s.houseprice - player[s.owner].money) + " more to buy a house for " + s.name + ".</p>");
-				return;
-			}
-		}
-
-		for (var i = 0; i < cellsCount; i++) {
-			if (square[i].hotel === 1) {
-				hotelSum++;
-			} else {
-				houseSum += square[i].house;
-			}
-		}
-
-		if (s.house < 4 && houseSum >= 32) {
-			alert.showAccept("<p>All 32 houses are owned. You must wait until one becomes available.</p>");
-			return;
-		} else if (s.house === 4 && hotelSum >= 12) {
-			alert.showAccept("<p>All 12 hotels are owned. You must wait until one becomes available.</p>");
-			return;
-		}
-
-		buyHouse(checkedProperty);
-
-	});
-
-	$("#sellhousebutton").click(function() { sellHouse(getCheckedProperty()); });
 
 	buttons.buy.click(function() {
 		buttons.buy.show();

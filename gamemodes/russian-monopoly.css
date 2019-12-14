@@ -68,3 +68,17 @@
     background-image: url('../images/meeting_icon.png');
 }
 
+
+#lobbyscreen .security {
+    background-color: red;
+}
+#lobbyscreen .soe {
+    background-color: yellow;
+}
+#lobbyscreen .executive {
+    background-color: blue;
+}
+#lobbyscreen .business {
+    background-color: green;
+}
+
