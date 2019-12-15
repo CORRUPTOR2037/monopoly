@@ -226,6 +226,9 @@ body {
 #control button {
     width: 88px;
 }
+#control #menu button {
+    width: auto;
+}
 
 #control button:hover, #popup button:hover {
     background: #aaa;
@@ -651,7 +654,6 @@ body {
 	height: 30px;
 	min-width: 90px;
 	width: 90px;
-	max-width: 90px;
 	overflow: hidden;
 }
 
@@ -910,6 +912,10 @@ body {
     margin: 20px 0 0px;
     padding: 0;
     opacity: 0.1;
+}
+
+.enlarge.cell .cell-card .fa {
+    display: none;
 }
 
 .cell .cell-card .cell-goal {

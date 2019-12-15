@@ -16,10 +16,8 @@ function Bill(name, groupNumber, prices, sides, icon) {
 	this.icon = icon;
 	
 	this.state = 0;
-	this.amendments = 0;
+	this.gtdVote = 0;
 	this.direction = 0;
-	this.forceMove = false;
-	this.negativeReaction = 0;
 	
 	this.prices = prices;
 	
@@ -55,6 +53,16 @@ function Bill(name, groupNumber, prices, sides, icon) {
 			this.direction = 0;
         }
 	};
+	
+	this.directionName = function(){
+		if (this.direction > 0) {
+            return this.sides[0];
+        } else if (this.direction == 0) {
+            return this.sides[1];
+        } else {
+			return this.sides[2];
+		}
+	}
 }
 function Price(buy, visit) {
 	this.buy = buy;
@@ -381,7 +389,7 @@ for (var i = 1; i <= 1; i++) {
 	chanceCards.push(new RatingCard(i, "assembly"));
 }
 for (var i = 4; i <= 44; i+=4){
-	chanceCards.push(new GotoCard(i, "jail"));
+	chanceCards.push(new GotoCard(i, square[i].type));
 }
 //chanceCards.push(new ChangePartyOfferCard(i));
 
@@ -506,4 +514,6 @@ var vacationTypes = [
 ]
 var vacationDuration = 2;
 
-var amendMultiplier = 0.2;
+var amendMultiplier = 1;
+
+var createBillRating = 3;

@@ -59,6 +59,20 @@ function GameLog() {
 			player[turn].AI.alertList += "<div>" + alertText + "</div>";
 		}
 	}
+	this.addPeopleRating = function(value, playerInfo){
+		if (value > 0) {
+            this.add(getString("increased-people-rating").replace("%player", playerInfo.name).replace("%amount", value), playerInfo, 1);
+        } else if (value < 0) {
+            this.add(getString("decreased-people-rating").replace("%player", playerInfo.name).replace("%amount", value), playerInfo, -1);
+        }
+	}
+	this.addAssemblyRating = function(value, playerInfo){
+		if (value > 0) {
+            this.add(getString("increased-assembly-rating").replace("%player", playerInfo.name).replace("%amount", value), playerInfo, 1);
+        } else if (value < 0) {
+            this.add(getString("decreased-assembly-rating").replace("%player", playerInfo.name).replace("%amount", value), playerInfo, -1);
+        }
+	}
 	this.scrollTop = function(){
 		this.log.stop().animate({"scrollTop": this.log.prop("scrollHeight")}, 1000);
 	}
@@ -68,8 +82,15 @@ var gameLog = new GameLog();
 function Alert() {
 	this.popup = $("#popup");
 	this.text = $("#popup-text");
+	this.opened = false;
+	this.stack = [];
 
+	let self = this;
 	this.showAccept = function(HTML, action) {
+		if (self.opened) {
+			self.stack.push(() => self.showAccept(HTML, action));
+            return;
+        }
 		this.text.html(HTML);
 		this.text.append("<div><button id='popupclose'>" + getString("OK") + "</button></div>");
 		
@@ -77,6 +98,10 @@ function Alert() {
 		this.fadeIn();
 	}
 	this.showConfirm = function(HTML, action) {
+		if (self.opened) {
+			self.stack.push(() => self.showConfirm(HTML, action));
+            return;
+        }
 		this.text.html(HTML);
 		this.text.append("<div><button id='popupyes'>" + getString("yes") + "</button><button id='popupno'>" + getString("no") + "</button></div>");
 	
@@ -86,6 +111,10 @@ function Alert() {
 		this.fadeIn();
 	}
 	this.showInput = function(HTML, action) {
+		if (self.opened) {
+			self.stack.push(() => self.showInput(HTML, action));
+            return;
+        }
 		this.text.html(HTML);
 		this.text.append("<div><input id='popup-input'/><button id='popup-accept'>" + getString("OK") + "</button><button id='popup-pass'>" + getString("pass") + "</button></div>");
 		
@@ -98,6 +127,10 @@ function Alert() {
 		this.fadeIn();
 	}
 	this.showRoll = function(HTML, action) {
+		if (self.opened) {
+			self.stack.push(() => self.showRoll(HTML, action));
+            return;
+        }
 		var dice = game.rollDice();
 		this.text.html(
 			'<span style="display: block">' + getString("you-rolled").replace("%value", dice) + "</span>" + 
@@ -110,6 +143,10 @@ function Alert() {
 		this.fadeIn();
 	}
 	this.showChoose = function(HTML, buttons, actions) {
+		if (self.opened) {
+			self.stack.push(() => self.showChoose(HTML, buttons, actions));
+            return;
+        }
 		this.text.html(HTML);
 		
 		HTML = "";
@@ -129,18 +166,24 @@ function Alert() {
 		this.fadeIn();
 	}
 	this.fadeIn = function(){
+		self.opened = true;
 		$("#popupbackground").fadeIn(400, function() {
 			$("#popupwrap").show();
 		});
 	}
 	this.fadeOut = function(){
-		$("#popupwrap").hide();
-		$("#popupbackground").fadeOut(400);
+		self.opened = false;
+		if (self.stack.length > 0) {
+            (self.stack.shift())();
+        } else {
+			$("#popupwrap").hide();
+			$("#popupbackground").fadeOut(400);
+			
+		}
 	}
 }
 var browserAlert = alert;
 var alert = new Alert();
-
 
 // 'enlarge' for mouse, 'control-enlarge' for center panel
 function setEnlarge(square, enlargeID){
@@ -194,7 +237,7 @@ function Buttons() {
 	}
 	this.savedButtons = [];
 	this.saveButtons = function(){
-		this.savedButtons = this.lastButtonsConfiguration;
+		this.savedButtons = this.lastButtonsConfig;
 	}
 	this.loadButtons = function(){
 		this.update(this.savedButtons);
@@ -452,13 +495,13 @@ function updateOwned() {
             count++;
         }
 		
-		$("#cell" + i + "owner").attr('class', "cell-owner " + (squareItem.owner > 0 ? player[squareItem.owner].style : "hidden") + (squareItem.forceMove ? " protected" : ""));
+		$("#cell" + i + "owner").attr('class', "cell-owner " + (squareItem.owner > 0 ? player[squareItem.owner].style : "hidden"));
 		$("#cell" + i + " .cell-spec").attr('class', "cell-spec" + (currentPlayer.party.specialization.includes(squareItem.group) ? " active" : ""));
 		
 		var array = $("#" + squareItem.cell.id + " .cell-card .cell-info-line");
 		for (var j = 0; j < 3; j++) {
 			array[j].classList.remove("bill-state-green", "bill-state-yellow");
-			if (i != currentPlayer.position || buttons.rollDices.is(":visible")) continue;
+			//if (i != currentPlayer.position || buttons.rollDices.is(":visible")) continue;
 			if (j < squareItem.state) {
 				array[j].classList.add("bill-state-green");
 			} else if (j == squareItem.state && i == player[turn].position) {
@@ -481,7 +524,7 @@ function updateOwned() {
 		} else {
 			amandments.attr('class', 'cell-amandments neutral');
 		}
-		amandments.html("<span class='cell-rating'>" + direction + "</span><br/><span class='cell-paper'>" + squareItem.amendments + "</span>");
+		amandments.html("<span class='cell-rating'>" + direction + "</span><br/><span class='cell-paper'>" + (squareItem.gtdVote > 0 ? "+" : "") + squareItem.gtdVote + "</span>");
 	}
 
 	setEnlarge(square[p.position].cell, "control-enlarge");
@@ -558,64 +601,49 @@ function getCard() {
 	return card;
 }
 
-function voteForBill(bill){
-	var result = [0, 0, 0];
-	if (bill.forceMove) {
-		result[0] = 0.5 + Math.random() / 3;
-		result[1] = (1 - result[0]) * Math.random();
-		result[2] = (1 - result[0] - result[1]);
-	} else {
-		var owner = player[bill.owner];
-		var voteUp = 0, voteDown = 0, noVote = 0;
-		for (var i = 1; i < player.length; i++) {
-			var partyReaction = player[i].party.groupsReaction[bill.group.name];
-			var partyRating = player[i].assemblyRating;
-			var directionValue = Math.min(1, Math.abs(bill.direction)) * (Math.random() * 0.4 + 0.6);
-			if (partyReaction == 0 || bill.direction == 0) {
-				var a = Math.random(), b = Math.random();
-				if (a > b) { var t = a; a = b; b = t; }
-				console.log("a: " + a + " " + b);
-				voteDown += partyRating * a;
-				noVote   += partyRating * (b - a);
-				voteUp   += partyRating * (1 - b);
-			} else if ((bill.direction > 0 && partyReaction > 0) ||
-				(bill.direction < 0 && partyReaction < 0)) {
-				voteUp += partyRating * directionValue;
-				noVote += partyRating * (1 - directionValue);
-			} else {
-				var value = Math.min(1, Math.abs(bill.direction));
-				console.log("c: " + value);
-				voteDown += partyRating * directionValue;
-				noVote += partyRating * (1 - directionValue);
-			}
-			console.log("end");
-		}
-		var sum = voteUp + voteDown + noVote;
-		voteUp /= sum; voteDown /= sum; noVote /= sum;
-		if (bill.negativeReaction > 0) {
-			var negative = Math.min(voteUp, bill.negativeReaction * 0.2);
-			voteUp -= negative;
-			var a = Math.random();
-			voteDown += negative * a;
-			noVote += negative * (1 - a);
-		}
-		result = [voteUp, noVote, voteDown];
-	}
-	result[0] = Math.floor(result[0] * 100); result[1] = Math.floor(result[1] * 100); result[2] = Math.floor(result[2] * 100);
-	
-	var sum = result[0] + result[1] + result[2];
-	console.log(result);
-	console.log(sum);
-	if (sum < 100) {
-        result[1] += 100 - sum;
-    } else if (sum > 100) {
-		if (result[1] > sum - 100) {
-            result[1] -= sum - 100;
-        } else {
-			result[0] -= sum - 100;
-		}
+function voteForBillNextRound(bills, billIndex, playerIndex, results, endCallback) {
+	if (playerIndex >= player.length) {
+        playerIndex = 1;
+		billIndex++;
+		if (billIndex >= bills.length) {
+            endCallback(results);
+			return;
+        }
     }
-	return result;
+	if (results[billIndex] == undefined) {
+        results[billIndex] = {};
+    }
+	var bill = bills[billIndex];
+    if (bills[billIndex].owner == playerIndex) {
+		voteForBillNextRound(bills, billIndex, playerIndex+1, results, endCallback);
+	} else if (player[playerIndex].isAI) {
+        var partyReaction = player[playerIndex].party.groupsReaction[bill.group.name];
+		if ((bill.direction > 0 && partyReaction > 0) ||
+			(bill.direction < 0 && partyReaction < 0)) {
+			results[billIndex][playerIndex] = 1;
+		} else if (partyReaction == 0) {
+			var result = 0;
+			if (Math.random() > 0.7) result = 1;
+            if (Math.random() > 0.7) result = -1;
+            results[billIndex][playerIndex] = result;
+        } else {
+			results[billIndex][playerIndex] = -1;
+		}
+		voteForBillNextRound(bills, billIndex, playerIndex+1, results, endCallback);
+    } else {
+		alert.showChoose(
+			getString("vote-for-bill")
+				.replace("%player", player[playerIndex].name)
+				.replace("%owner", player[bill.owner].name)
+				.replace("%bill", bill.uiName)
+				.replace("%action", bill.directionName()),
+			[getString("vote-approve"), getString("vote-ignore"), getString("vote-reject")],
+			function(index){
+				results[billIndex][playerIndex] = 1 - index;
+				voteForBillNextRound(bills, billIndex, playerIndex+1, results, endCallback);
+			}
+		);
+	}
 }
 
 function gotojail() {
@@ -661,26 +689,39 @@ function buy(playerIndex, bill, cost, direction) {
 	var p = player[playerIndex];
 
 	if (p.money >= cost) {
+		if (!p.isAI) {
+            game.showTutorial("bought-bill");
+        }
 		p.pay(cost);
-
 		bill.owner = playerIndex;
-		bill.direction += direction;
+		bill.direction += direction * createBillRating;
+		bill.gtdVote = 1;
 		bill.moveState();
-		gameLog.add(
-			getString("buy-message")
+		var reaction;
+		if (direction > 0) reaction = "positive";
+		else if (direction == 0) reaction = "no";
+		else reaction = "negative";
+		var message = getString("buy-message")
 				.replace("%player", p.name)
 				.replace("%bill", bill.uiName)
 				.replace("%price", cost)
-				.replace("%action", getString(bill.sides[1 - direction])),
+				.replace("%action", getString(bill.directionName()));
+		var alertMessage =
+			"<p>" + message + "</p>" +
+			"<p>" + getString("buy-cost").replace("%amount", wrapMoney(cost)) + "</p>" +
+			"<p>" + getString("bill-reaction-" + reaction) + "</p>" +
+			"<p>" + getString("buy-bill-rating").replace("%amount", (bill.direction > 0 ? "+" : "") + bill.direction) + "</p>";
+		alert.showAccept(alertMessage);
+		gameLog.add(
+			message + " " +
+			getString("bill-reaction-" + reaction),
 			p, -1
 		);
-
-		updateOwned();
-
 	} else {
 		if (!p.AI)
             alert.showAccept(getString("you-need-money").replace("%money", (cost - p.money)));
 	}
+	updateOwned();
 	nextTurn();
 }
 
@@ -718,32 +759,41 @@ function amend() {
     var cost = bill.visitPrice();
 	if (p.money >= cost) {
 		p.pay(cost);
-		bill.amendments++;
-		gameLog.add(
-			getString("amended-to")
-				.replace("%player", p.name)
-				.replace("%place", bill.uiName)
-				.replace("%price", cost)
-				.replace("%action", getString(bill.sides[1 - direction])),
-				p, -1
-		);
+		bill.gtdVote += 0.3;
+		
 		if (p.AI) {
 			bill.direction += p.party.groupsReaction[bill.style] * amendMultiplier;
+			gameLog.add(
+				getString("amended-to")
+					.replace("%player", p.name)
+					.replace("%place", bill.uiName)
+					.replace("%price", cost)
+					.replace("%action", getString(p.party.groupsReaction[bill.style])),
+					p, -1
+			);
+			updateOwned();
 		} else {
 			alert.showChoose(getString("amend-choose-side-text"), bill.sides, function(index){
 				bill.direction += amendMultiplier * (1 - index);
+				updateOwned();
+				gameLog.add(
+					getString("amended-to")
+						.replace("%player", p.name)
+						.replace("%place", bill.uiName)
+						.replace("%price", cost)
+						.replace("%action", getString(bill.sides[1 - index])),
+						p, -1
+				);	
 			});
 		}
-		updateOwned();
 	} else {
 		if (!p.AI)
             alert.showAccept(getString("you-need-money").replace("%money", (cost - p.money)));
 	}
-	updateOwned();
 	if (p.isAI) {
         nextTurn();
     } else {
-		buttons.performEndTurn();
+		buttons.update(["amend", "end-turn"]);
 	}
 }
 
@@ -774,11 +824,7 @@ function say(playerIndex, bill, direction) {
 	gameLog.add(getString("say-message").replace("%player", p.name).replace("%bill", bill.uiName).replace("%action", getString(bill.sides[1 - direction])), p);
 	var ratingAmount = direction * 2;
 	p.setPeopleRating(p.peopleRating + ratingAmount);
-	if (direction > 0) {
-        gameLog.add(getString("increased-people-rating").replace("%player", p.name).replace("%amount", ratingAmount), p);
-    } else if (direction < 0) {
-		gameLog.add(getString("decreased-people-rating").replace("%player", p.name).replace("%amount", -ratingAmount), p);
-	}
+	gameLog.addPeopleRating(ratingAmount, p);
 	
 	updateMoney();	
 	nextTurn();
@@ -807,6 +853,7 @@ function landOnBill(bill, playerIndex) {
 				}
 				updateOwned();
 			} else {
+				game.showTutorial("land-on-bill");
 				buttons.update(["buy", "say"]);
 			}
 			return;
@@ -815,14 +862,15 @@ function landOnBill(bill, playerIndex) {
 		// Collect rent
 		if (bill.state > 0){
 			if (bill.owner != turn) {
-				
 				if (p.AI){
 					amend();
 				} else {
+					game.showTutorial("amend-bill");
 					buttons.update(["amend"]);
 				}
 			} else {
 				if (p.AI){
+					game.showTutorial("move-bill");
 					moveBill(bill);
 				} else {
 					buttons.update(['move']);
@@ -838,13 +886,15 @@ function takeCard(s, playerIndex) {
 	prizeCard.randomize(p);
     if (p.human) {
 		alert.showAccept(prizeCard.text(),  () => prizeCard.action(p));
+		buttons.performEndTurn();
 	} else {
 		prizeCard.action(p);
+		nextTurn();
 	}
-	buttons.performEndTurn();
 }
 
 function lobby(square, playerIndex) {
+	game.showTutorial("lobby");
 	var p = player[playerIndex];
 	if (p.isAI) {
         p.AI.rollLobby();
@@ -924,7 +974,7 @@ function performAction(p, type) {
 			selectCell(p, function(cell){
 				return player[cell.owner] == p && cell.state > 0;
 			}, function(cell){
-				cell.forceMove = true;
+				cell.gtdVote += 2;
 				afterPerformAction(p, type);
 			});
 		} break;
@@ -940,7 +990,7 @@ function performAction(p, type) {
 			selectCell(p, function(cell){
 				return cell.state > 0;
 			}, function(cell){
-				cell.negativeReaction++;
+				cell.gtdVote -= 2;
 				afterPerformAction(p, type);
 			});
 		} break;
@@ -1002,11 +1052,11 @@ function sendToVacation(p, type) {
 	p.pay(type.cost);
 	if (type.assemblyRatingLoss > 0) {
 		p.setAssemblyRating(p.assemblyRating - type.assemblyRatingLoss);
-        gameLog.add(getString("decreased-assembly-rating").replace("%player", p.name).replace("%amount", type.assemblyRatingLoss), p, -1);
+		gameLog.addAssemblyRating(-type.assemblyRatingLoss, p);
     }
 	if (type.peopleRatingLoss > 0) {
 		p.setPeopleRating(p.peopleRating - type.peopleRatingLoss);
-		gameLog.add(getString("decreased-people-rating").replace("%player", p.name).replace("%amount", type.peopleRatingLoss), p, -1);
+		gameLog.addPeopleRating(-type.peopleRatingLoss, p);
 	}
 	updateMoney();
 }
@@ -1140,50 +1190,74 @@ function roll() {
 		// Collect $200 salary as you pass GO
 		if (currentPlayer.position >= cellsCount) {
 			currentPlayer.position -= cellsCount;
-			var payment = currentPlayer.sessionStartPayment();
-			var report = "";
-			var payAmount = 0;
-			Object.keys(payment).forEach(function(key){
-				var amount = payment[key];
-				if (amount == 0) return;
-				payAmount += amount;
-				if (amount > 0) {
-                    report += "<p class='pay-info payUp'>"
-                } else {
-					report += "<p class='pay-info payDown'>"
-				}
-				report += '<span class="payment-key">' + getString("payment-" + key) + ':</span><span class="payment-amount">' + wrapMoney(amount) + '</span></p>';
-			});
-			report += "<br>";
+			endSession(currentPlayer);
+		} else {
+			land();
+		}
+	}
+}
+
+function endSession(currentPlayer) {
+	currentPlayer.givePartyTickets();
+	
+	var payment = currentPlayer.sessionStartPayment();
+	var report = "";
+	var payAmount = 0;
+	Object.keys(payment).forEach(function(key){
+		var amount = payment[key];
+		if (amount == 0) return;
+		payAmount += amount;
+		if (amount > 0) {
+            report += "<p class='pay-info payUp'>"
+        } else {
+			report += "<p class='pay-info payDown'>"
+		}
+		report += '<span class="payment-key">' + getString("payment-" + key) + ':</span><span class="payment-amount">' + wrapMoney(amount) + '</span></p>';
+	});
+	report += "<br>";
 			
-			for (var i = 0; i < square.length; i++){
-				if (square[i].type != 'bill') continue;
-				var bill = square[i];
-				if (bill.owner != currentPlayer.index) continue;
-				var billVote = voteForBill(bill);
-				report += '<br><span class="vote billName">' + bill.uiName + '</span><br>';
-				report += '<span class="vote voteUp">' + billVote[0] + '%</span>';
-				report += '<span class="vote noVote">' + billVote[1] + '%</span>';
-				report += '<span class="vote voteDown">' + billVote[2] + '%</span><br>';
-				if (billVote[0] < 50) {
-					bill.revertState();
-					if (bill.state == 0) {
-                        currentPlayer.stats["rejected"]++;
-                    }
-					report += '<span class="vote voteDown">' + getString("vote-declined") + '</span>';
-				} else {
-					report += '<span class="vote voteUp">' + getString("vote-approved-state" + bill.state) + '</span>';
-				}
+	var billsForVote = [];
+	for (var i = 0; i < square.length; i++){
+		if (square[i].owner == currentPlayer.index) billsForVote.push(square[i]);
+	}
+	voteForBillNextRound(billsForVote, 0, 1, [], function(result){
+		console.log(result);
+			for (var i = 0; i < result.length; i++){
+					var bill = billsForVote[i];
+					var billVote = [0,0,0];
+					Object.keys(result[i]).forEach((key) => {
+						if (result[i][key] > 0) billVote[0]++;
+						else if (result[i][key] == 0) billVote[1]++;
+                        else billVote[2]++;
+					});
+					if (bill.gtdVote > 0) billVote[0] += bill.gtdVote;
+                    else if (bill.gtdVote < 0) billVote[2] += bill.gtdVote;
+					report += '<br><span class="vote billName">' + bill.uiName + '</span><br>';
+					report += '<span class="vote voteUp">' + getString("vote-approve") + ": " + billVote[0] + '</span>';
+					report += '<span class="vote noVote">' + getString("vote-ignore") + ": " + billVote[1] + '</span>';
+					report += '<span class="vote voteDown">' + getString("vote-reject") + ": " + billVote[2] + '</span>';
+					report += '<span class="vote voteAppend">(' + getString('bonus-votes') + ": " + bill.gtdVote + ')</span><br>';
+					if (billVote[0] - billVote[2] + bill.gtdVote <= 0) {
+						bill.revertState();
+						if (bill.state == 0) {
+							currentPlayer.stats["rejected"]++;
+						}
+						report += '<span class="vote voteDown">' + getString("vote-declined") + '</span>';
+					} else {
+						report += '<span class="vote voteUp">' + getString("vote-approved-state" + bill.state) + '</span>';
+						currentPlayer.setPeopleRating(currentPlayer.peopleRating + bill.direction);
+						currentPlayer.setAssemblyRating(currentPlayer.assemblyRating + 2);
+						gameLog.addPeopleRating(bill.direction, currentPlayer);
+						gameLog.addAssemblyRating(2, currentPlayer);
+					}
+					report += "<br>";
 			}
-			alert.showAccept(report);
+			alert.showAccept(report, land);
 			currentPlayer.money += payAmount;
 			updateOwned();
 			updateMoney();
 			gameLog.add(getString("new-session-pay").replace("%player", currentPlayer.name).replace("%amount", payAmount), p, payAmount > 0 ? 1 : -1);
-		}
-
-		land();
-	}
+	});
 }
 
 function nextTurn() {
@@ -1314,6 +1388,7 @@ function cellInner(point, id){
 
 function setup() {
 	game = new GameState();
+	game.showTutorial("start-game");
 	
 	// Initialize players
 	var pc = parseInt(document.getElementById("playernumber").value, 10);
@@ -1326,6 +1401,7 @@ function setup() {
 		
 		player.push(new Player(name, party, type));
 		player[i].index = i;
+		player[i].givePartyTickets();
 	}
 
 	// Switch panels

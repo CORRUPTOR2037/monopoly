@@ -10,11 +10,11 @@ function Player(name, party, isAI) {
 	this.assemblyRating = party.startAssemblyRating;
 	this.peopleRating = party.startPeopleRating;
 	this.tickets = {
-		"jailCard": 3,
-		"rejectBillCard": 3,
-		"moveBillCard": 3,
-		"createBillCard": 3,
-		"gotoCard": 3
+		"jailCard": 0,
+		"rejectBillCard":0,
+		"moveBillCard": 0,
+		"createBillCard": 0,
+		"gotoCard": 0
 	}
 	this.stats = {
 		"state1": 0,
@@ -94,4 +94,10 @@ function Player(name, party, isAI) {
 	}
 	
 	this.sessionPeopleBonus = this.ratingsData["sessionPeopleBonus"];
+	
+	this.givePartyTickets = function(){
+		for (var i = 0; i < self.party.starterCards.length; i++){
+            self.addTicket(self.party.starterCards[i]);
+        }
+	}
 }
