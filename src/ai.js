@@ -18,7 +18,7 @@ function AITest(p) {
 	this.buyProperty = function(index) {
 		var s = square[index];
 
-		if (p.money > s.price().buy + 50) {
+		if (p.money > s.buyPrice() + 50) {
 			return true;
 		} else {
 			return false;
@@ -168,6 +168,11 @@ function AITest(p) {
             if (Math.random() > 0.5) 
 				self.origin.setLobbyRating(key, self.origin.lobby[key] + self.origin.party.lobbyAddition(game.rollDice()));
         });
+	}
+	
+	this.rollVacation = function(){
+		if (self.origin.money > Math.random() > self.origin.party.difficulty * 0.2)
+			sendToVacation(self.origin, self.origin.party.defaultVacation);
 	}
 
 	// Determine what to bid during an auction.

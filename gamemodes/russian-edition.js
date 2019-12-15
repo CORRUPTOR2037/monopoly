@@ -18,26 +18,41 @@ function Bill(name, groupNumber, prices, sides) {
 	this.amendments = 0;
 	this.direction = 0;
 	this.forceMove = false;
+	this.negativeReaction = 0;
 	
 	this.prices = prices;
 	
 	this.sides = sides;
 	for (var i = 0; i < sides.length; i++) {
-        this.sides[i] = "buy-side-" + this.sides[i];
+        this.sides[i] = getString("buy-side-" + this.sides[i]);
     }
 	
 	this.uiName = getString(this.style) + ": " + getString(this.name)
 	
-	this.price = function(){ return this.prices[this.state]; }
+	this.buyPrice = function(){ return this.prices[this.state].buy; }
+	this.visitPrice = function(){ return this.prices[this.state-1].visit; }
 	
-	this.refusePropose = function(){
-		if (this.state == 0) {
-            makeAuction(this);
-        }
-	};
+	this.refusePropose = function(){};
 	
 	this.moveState = function(){
 		this.state++;
+		this.negativeReaction = false;
+		if (this.forceMove) {
+            this.forceMove = false;
+        }
+	};
+	
+	this.revertState = function() {
+		this.state--;
+		this.negativeReaction = false;
+		if (this.forceMove) {
+            this.forceMove = false;
+        }
+		if (this.state == 0) {
+            this.owner = undefined;
+			this.amendments = 0;
+			this.direction = 0;
+        }
 	};
 }
 function Price(buy, visit) {
@@ -66,7 +81,6 @@ function MoneyCard(index, positive) {
 		};
 	}
 	this.text = () => getString(this.textTemplate).replace("%amount", wrapMoney(this.amount));
-	
 }
 function TicketCard(name, index) {
 	this._text = getString("ticket-card-" + name + index);
@@ -119,7 +133,7 @@ function RatingCard(index, type, positive) {
 		if (this.positive) {
             gameLog.add(getString("increased-" + this.type + "-rating").replace("%player", p.name).replace("%amount", this.amount), p, 1);
         } else {
-			gameLog.add(getString("decreased-" + this.type + "-rating").replace("%player", p.name).replace("%amount", this.amount), p, 1);
+			gameLog.add(getString("decreased-" + this.type + "-rating").replace("%player", p.name).replace("%amount", this.amount), p, -1);
         }
 		updateMoney();
 	}
@@ -147,6 +161,12 @@ function ChangePartyOfferCard(index) {
 function Lobby(name, bonuses) {
     this.name = name;
 	this.bonuses = bonuses;
+}
+function VacationType(name, cost, peopleRatingLoss, assemblyRatingLoss) {
+    this.name = name;
+	this.cost = cost;
+	this.peopleRatingLoss = peopleRatingLoss;
+	this.assemblyRatingLoss = assemblyRatingLoss;
 }
 
 function Group(name) {
@@ -321,16 +341,16 @@ square[47] = new Bill("piar-create", 11, [
 var communityChestCards = [];
 var chanceCards = [];
 
-communityChestCards.push(new TicketCard("ownCard", 1));
+communityChestCards.push(new TicketCard("rejectBillCard", 1));
 /*for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new MoneyCard(i, true));
 	chanceCards.push(new MoneyCard(i, true));
 	chanceCards.push(new MoneyCard(i, false));
 }
 for (var i = 1; i <= 1; i++) {
-    communityChestCards.push(new TicketCard("ownCard", i));
-	chanceCards.push(new TicketCard("ownCard", i));
-	chanceCards.push(new ActionCard("ownCard", i));
+    communityChestCards.push(new TicketCard("rejectBillCard", i));
+	chanceCards.push(new TicketCard("rejectBillCard", i));
+	chanceCards.push(new ActionCard("rejectBillCard", i));
 }
 for (var i = 1; i <= 1; i++) {
     communityChestCards.push(new TicketCard("jailCard", i));
@@ -392,6 +412,8 @@ function Party(text, difficulty, groupsReaction, specialization) {
 			this.lobbyPayment = 25;
 			this.startAssemblyRating = 50;
 			this.lobbyRollBarrier = 3;
+			this.starterCards = ["jailCard", "rejectBillCard", "moveBillCard", "createBillCard", "gotoCard"];
+			this.defaultVacation = 1;
 		} break;
 		case 2: {
 			this.fee = 50;
@@ -400,6 +422,8 @@ function Party(text, difficulty, groupsReaction, specialization) {
 			this.lobbyPayment = 20;
 			this.startAssemblyRating = 40;
 			this.lobbyRollBarrier = 4;
+			this.starterCards = ["rejectBillCard", "moveBillCard", "createBillCard", "gotoCard"];
+			this.defaultVacation = 2;
 		} break;
 		case 3: {
 			this.fee = 100;
@@ -408,6 +432,8 @@ function Party(text, difficulty, groupsReaction, specialization) {
 			this.lobbyPayment = 15;
 			this.startAssemblyRating = 30;
 			this.lobbyRollBarrier = 4;
+			this.starterCards = ["rejectBillCard", "moveBillCard", "gotoCard"];
+			this.defaultVacation = 3;
 		} break;
 		case 4: {
 			this.fee = 150;
@@ -416,6 +442,8 @@ function Party(text, difficulty, groupsReaction, specialization) {
 			this.lobbyPayment = 10;
 			this.startAssemblyRating = 20;
 			this.lobbyRollBarrier = 5;
+			this.starterCards = ["rejectBillCard", "gotoCard"];
+			this.defaultVacation = 4;
 		} break;
 		case 5: {
 			this.fee = 200;
@@ -424,6 +452,8 @@ function Party(text, difficulty, groupsReaction, specialization) {
 			this.lobbyPayment = 5;
 			this.startAssemblyRating = 10;
 			this.lobbyRollBarrier = 5;
+			this.starterCards = ["rejectBillCard"];
+			this.defaultVacation = 5;
 		} break;
     }
 	
@@ -434,21 +464,21 @@ function Party(text, difficulty, groupsReaction, specialization) {
 
 var players = [];
 
-players[0]  = new Party("conservative",      1, [-1, -1, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [1,2,3,4,6]);
-players[1]  = new Party("communist",         2, [-1,  1, -1, -1,    1, -1,    1, -1,  1, -1,   -1, -1], [1,4,5,10]);
+players[0]  = new Party("conservative",      1, [-1, -1, -1, -1,   -1, -1,   -1, -1,  0, -1,    0,  1], [1,2,3,4,6]);
+players[1]  = new Party("communist",         2, [ 0,  1, -1,  0,    1, -1,    1,  0,  0, -1,   -1,  1], [1,4,5,10]);
 players[2]  = new Party("populist",          2, [ 1,  1, -1, -1,    1,  1,    1, -1,  1, -1,    1,  1], [0,1,2,11]);
-players[3]  = new Party("socialist",         3, [ 1, -1, -1,  1,   -1,  1,   -1, -1,  1, -1,    1,  1], [6,7,10]);
-players[4]  = new Party("traditionalist",    3, [-1, -1, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [2,3,4]);
-players[5]  = new Party("economist",         3, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [1,5,9]);
-players[6]  = new Party("democrat",          3, [ 1,  1,  1,  1,    1, -1,    1,  1,  1,  1,    1,  1], [0,3,6]);
-players[7]  = new Party("liberal",           4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [3,10]);
-players[8]  = new Party("green",             4, [ 1, -1, -1,  1,    1, -1,    1,  1,  1,  1,    1, -1], [5,8]);
-players[9]  = new Party("monarchist",        4, [-1, -1, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [3,7]);
-players[10] = new Party("right",             4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [5,9]);
-players[11] = new Party("pirate",            4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1, -1], [2,7]);
-players[12] = new Party("ultraconservative", 4, [-1,  1, -1, -1,    1, -1,   -1, -1,  1, -1,   -1,  1], [3,7]);
+players[3]  = new Party("socialist",         3, [ 1, -1,  0,  0,    0,  0,    0,  0,  1,  0,    1,  0], [6,7,10]);
+players[4]  = new Party("traditionalist",    3, [ 0,  0, -1, -1,   -1, -1,   -1, -1, -1, -1,   -1,  1], [2,3,4]);
+players[5]  = new Party("economist",         3, [ 1,  1,  1,  1,    1,  1,    0,  0,  0,  0,    1,  0], [1,5,9]);
+players[6]  = new Party("democrat",          3, [ 1,  0,  0,  1,    0, -1,    1,  0,  1,  1,    1,  1], [0,3,6]);
+players[7]  = new Party("liberal",           4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1,  0], [3,10]);
+players[8]  = new Party("green",             4, [ 1, -1, -1,  0,    1, -1,    0,  0,  1,  1,    0,  0], [5,8]);
+players[9]  = new Party("monarchist",        4, [-1, -1, -1, -1,   -1, -1,   -1, -1,  0,  0,    0,  0], [3,7]);
+players[10] = new Party("rightparty",        4, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1,  0], [5,9]);
+players[11] = new Party("pirate",            4, [ 0,  0,  1,  1,    0,  1,    1,  1,  0,  1,    0,  0], [2,7]);
+players[12] = new Party("ultraconservative", 4, [-1,  1, -1, -1,    1, -1,   -1, -1,  0, -1,   -1,  1], [3,7]);
 players[13] = new Party("progressivist",     5, [ 1,  1,  1,  1,    1,  1,    1,  1,  1,  1,    1,  1], [4]);
-players[14] = new Party("nationalist",       5, [ 1,  1,  1,  1,   -1, -1,    1,  1,  1, -1,    1,  1], [10]);
+players[14] = new Party("nationalist",       5, [ 0,  0,  1,  1,   -1,  0,    0,  0,  0,  0,    1,  1], [10]);
 players[15] = new Party("libertartian",      5, [ 1,  1,  1,  1,    1,  1,    1,  1, -1,  1,    1,  1], [5]);
 players[16] = new Party("marxist",           5, [-1,  1,  1,  1,    1,  1,    1, -1,  1, -1,    1, -1], [3]);
 
@@ -469,4 +499,14 @@ var lobbyTypes = [
 	new Lobby('business', [0, 5, 8])
 ];
 
-var lobbyLength = 20;
+
+var vacationTypes = [
+	new VacationType('maldives', 150, 6, 0),
+	new VacationType('france', 80, 3, 0),
+	new VacationType('bulgary', 40, 0, 0),
+	new VacationType('black-sea', 25, 0, 3),
+	new VacationType('golden-ring', 10, 0, 6),
+]
+var vacationDuration = 2;
+
+var amendMultiplier = 0.2;

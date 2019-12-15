@@ -29,7 +29,7 @@ div.russian-party.liberal, .russian-party.liberal span::before {
 div.russian-party.green, .russian-party.green span::before {
     background: linear-gradient(45deg, #007a3d 50%, white 50%);
 }
-div.russian-party.right, .russian-party.right span::before {
+div.russian-party.rightparty, .russian-party.rightparty span::before {
     background: linear-gradient(45deg, #009edc 50%, #e60f16 50%);
 }
 div.russian-party.monarchist, .russian-party.monarchist span::before {
@@ -38,7 +38,7 @@ div.russian-party.monarchist, .russian-party.monarchist span::before {
 div.russian-party.progressivist, .russian-party.progressivist span::before {
     background: linear-gradient(45deg, white 50%, #50bfe8 50%);
 }
-div.russian-party.nationalist, .russian-party.nationalistspan::before {
+div.russian-party.nationalist, .russian-party.nationalist span::before {
     background: linear-gradient(45deg, black 50%, yellow 50%);
 }
 div.russian-party.libertartian, .russian-party.libertartian span::before {

@@ -1101,8 +1101,8 @@ a.card {
 .jailCard {
     background-image: url(images/jailCardIcon.png);
 }
-.ownCard {
-    background-image: url(images/ownCardIcon.png);
+.rejectBillCard {
+    background-image: url(images/rejectBillCardIcon.png);
 }
 .moveBillCard {
     background-image: url(images/moveBillCardIcon.png);
@@ -1199,4 +1199,26 @@ a.card {
     background: url(images/shieldIcon.png);
     opacity: 0.6;
     background-size: 100% 100%;
+}
+.pay-info {
+    margin: 0px 0px 10px 0px;
+}
+.vote {
+    margin: 5px;
+}
+.payUp, .voteUp {
+    color: #84ff84;
+}
+.payDown, .voteDown {
+    color: #ff4b4b;
+}
+.payment-key {
+    width: 250px;
+    display: inline-block;
+    text-align: left;
+}
+.payment-amount {
+    display: inline-block;
+    text-align: right;
+    width: 60px;
 }

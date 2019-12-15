@@ -11,7 +11,7 @@ function Player(name, party, isAI) {
 	this.peopleRating = party.startPeopleRating;
 	this.tickets = {
 		"jailCard": 3,
-		"ownCard": 3,
+		"rejectBillCard": 3,
 		"moveBillCard": 3,
 		"createBillCard": 3,
 		"gotoCard": 3
@@ -41,9 +41,9 @@ function Player(name, party, isAI) {
 	this.chip = document.createElement('div');
 	this.chip.className = 'player-chip ' + this.style;
 	
-	let lobby = this.lobby;
+	let self = this;
 	lobbyTypes.forEach(function(t){
-		lobby[t.name] = 0;
+		self.lobby[t.name] = 0;
 	});
 	this.lobbyMoneyMultiplier = 1;
 	
@@ -66,7 +66,8 @@ function Player(name, party, isAI) {
 			"partyFee": -party.fee
 		};
 		lobbyTypes.forEach(function(t){
-			result[t.name] = lobby[t.name] * lobbyMoneyMultiplier;
+			console.log(t + " " + t.name + " " + self.lobby[t.name] + " " + self.party.lobbyPayment);
+			result[t.name] = self.lobby[t.name] * self.party.lobbyPayment;
 		});
 		return result;
 	}
