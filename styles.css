@@ -122,12 +122,14 @@ body {
 	margin: 0 auto;
 }
 
+.window {
+    cursor: move;
+}
 .panel {
     background-color: #4b4b4b;
     border-radius: 5px;
     padding: 5px;
     border: 0px solid black;
-    cursor: move;
 }
 .panel > * {
     cursor: auto;
@@ -890,10 +892,24 @@ body {
     margin: 0% auto 5%;
 }
 
-.cell .cell-card > div{
+.cell .cell-card .cell-info-line {
     margin: 0 3%;
     overflow: hidden;
     padding: 0 2%;
+    display: none;
+}
+
+.enlarge.cell .cell-card .cell-info-line {
+    display: block;
+}
+
+.cell .cell-card .fa {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    margin: 20px 0 0px;
+    padding: 0;
+    opacity: 0.1;
 }
 
 .cell .cell-card .cell-goal {
@@ -1032,11 +1048,12 @@ ul.russian-parties span::before, div.russian-parties .ddTitleText .ddlabel::befo
 
 .player-chip {
     float: right;
-    width: 20px;
-    height: 20px;
-    border: 3px solid black !important;
+    width: 28px;
+    height: 28px;
+    border: 2px solid black !important;
     border-radius: 20px;
     box-shadow: #00000080 0px 0px 5px 1px;
+    margin: 0 1px;
 }
 
 .bill-state-green {
@@ -1221,4 +1238,31 @@ a.card {
     display: inline-block;
     text-align: right;
     width: 60px;
+}
+
+#titledescription {
+    bottom: 20%;
+    left: 20%;
+    position: absolute;
+    font-size: 20px;
+}
+#hugetitle {
+    text-align: center;
+}
+#hugetitle h1 {
+    font-size: 10em;
+    font-family: 'Lora', serif;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+#hugetitle h3 {
+    font-size: 3em;
+}
+
+#hugetitle button {
+    background: white;
+    border: 2px solid #dbdbdb;
+    padding: 10px 20px;
+    width: 200px;
+    font-size: 2em;
 }

@@ -66,7 +66,6 @@ function Player(name, party, isAI) {
 			"partyFee": -party.fee
 		};
 		lobbyTypes.forEach(function(t){
-			console.log(t + " " + t.name + " " + self.lobby[t.name] + " " + self.party.lobbyPayment);
 			result[t.name] = self.lobby[t.name] * self.party.lobbyPayment;
 		});
 		return result;
@@ -83,9 +82,9 @@ function Player(name, party, isAI) {
 		"maxPeople": party.maxPeopleRating, "maxAssembly": party.maxAssemblyRating, "sessionPeopleBonus": party.sessionPeopleBonus
 	}
 	this.maxPeopleRating = function(){
-		var result = this.ratingsData["maxPeople"];
+		var result = self.ratingsData["maxPeople"];
 		lobbyTypes.forEach(function(t){
-			result -= lobby[t.name];
+			result -= self.lobby[t.name];
 		});
 		return result;
 	}

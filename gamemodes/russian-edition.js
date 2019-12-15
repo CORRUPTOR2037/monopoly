@@ -5,7 +5,7 @@ function Square(name, style) {
 	
 	this.uiName = getString(style);
 }
-function Bill(name, groupNumber, prices, sides) {
+function Bill(name, groupNumber, prices, sides, icon) {
 	group = groups[groupNumber];
 	
 	this.name = name;
@@ -13,6 +13,7 @@ function Bill(name, groupNumber, prices, sides) {
 	this.group = group;
 	this.owner = undefined;
 	this.type = "bill";
+	this.icon = icon;
 	
 	this.state = 0;
 	this.amendments = 0;
@@ -138,15 +139,14 @@ function RatingCard(index, type, positive) {
 		updateMoney();
 	}
 }
-function GotoCard(name, index) {
-	this._text = getString("goto-" + name + index);
+function GotoCard(position, name) {
+	this._text = getString("goto-" + name);
 	this.text = () => this._text;
-	this.ticketName = name;
+	this.position = position;
 	this.randomize = () => {};
 	this.action = function(player) {
-		player.addTicket(this.ticketName);
-		gameLog.add(getString("player-got").replace("%player", p.name).replace("%thing", this.ticketName + "-title"), p, 1);
-		updateTickets();
+		player.position = this.position;
+		land();
 	}
 }
 function ChangePartyOfferCard(index) {
@@ -198,151 +198,150 @@ square[0] = new Square("new-session", "new-session");
 
 square[1] = new Bill("self-gov-rights", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-book');
 square[2] = new Bill("self-gov-budget", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-money');
 square[3] = new Bill("self-gov-elections", 0, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-sign-in');
 
 square[4] = new Square("com-chest1", "com-chest");
 
 square[5] = new Bill("taxes-public-utility", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "reformat", "ease"]);
+], ["strengthen", "reformat", "ease"], 'fa-shower');
 square[6] = new Bill("taxes-self-employment", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "reformat", "increase"]);
+], ["decrease", "reformat", "increase"], 'fa-male');
 square[7] = new Bill("taxes-indirect", 1, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "reformat", "increase"]);
+], ["decrease", "reformat", "increase"], 'fa-shopping-cart');
 
 square[8] = new Square("lobby1", "lobby");
 
 square[9] = new Bill("law-administrative", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-legal');
 square[10] = new Bill("law-criminal", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-slack');
 square[11] = new Bill("law-procedural", 2, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-thumb-tack');
 
 square[12] = new Square("chance1", "chance");
 
 square[13] = new Bill("speech-assembly", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-users');
 square[14] = new Bill("speech-press", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-newspaper-o');
 square[15] = new Bill("speech-internet", 3, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-globe');
 
 square[16] = new Square("jail", "jail");
 
 square[17] = new Bill("soe-taxes", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-scissors');
 square[18] = new Bill("soe-privileges", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-arrows-alt');
 square[19] = new Bill("soe-control", 4, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "reformat", "ease"]);
+], ["strengthen", "reformat", "ease"], 'fa-black-tie');
 
 square[20] = new Square("meeting1", "meeting");
 
 square[21] = new Bill("business-taxes", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "reformat", "increase"]);
+], ["decrease", "reformat", "increase"], 'fa-balance-scale');
 square[22] = new Bill("business-supervision", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-search');
 square[23] = new Bill("business-easy-doing", 5, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-copy');
 
 square[24] = new Square("vacation", "vacation");
 
 square[25] = new Bill("elections-enter", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-address-card');
 square[26] = new Bill("elections-parties", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-building');
 square[27] = new Bill("elections-procedures", 6, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-briefcase');
 
 square[28] = new Square("com-chest3", "com-chest");
 
 square[29] = new Bill("privacy-data", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["increase", "reformat", "decrease"]);
+], ["increase", "reformat", "decrease"], 'fa-cloud');
 square[30] = new Bill("privacy-physical", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "reformat", "increase"]);
+], ["decrease", "reformat", "increase"], 'fa-binoculars');
 square[31] = new Bill("privacy-registry", 7, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["decrease", "reformat", "increase"]);
+], ["decrease", "reformat", "increase"], 'fa-server');
 
 square[32] = new Square("lobby2", "lobby");
 
 square[33] = new Bill("ecology-garbage", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-recycle');
 square[34] = new Bill("ecology-exhaust", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "reformat", "ease"]);
+], ["strengthen", "reformat", "ease"], 'fa-industry');
 square[35] = new Bill("ecology-fireprotection", 8, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["strengthen", "reformat", "ease"]);
+], ["strengthen", "reformat", "ease"], 'fa-tree');
 
 square[36] = new Square("chance3", "chance");
 
 square[37] = new Bill("foreign-invest-npo", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-plus-circle');
 square[38] = new Bill("foreign-invest-media", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-paper-plane');
 square[39] = new Bill("foreign-invest-commerse", 9, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-bank');
 
 square[40] = new Square("scandal", "scandal");
 
 square[41] = new Bill("human-rights-movement", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], 'fa-plane');
 square[42] = new Bill("human-rights-self-defence", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["ease", "reformat", "strengthen"]);
+], ["ease", "reformat", "strengthen"], 'fa-shield');
 square[43] = new Bill("human-rights-trade", 10, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["simplify", "reformat", "complicate"]);
+], ["simplify", "reformat", "complicate"], ' fa-shopping-basket');
 
 square[44] = new Square("meeting2", "meeting");
 
 square[45] = new Bill("piar-ban", 11, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["amend"]);
+], ["amend"], ' fa-remove');
 square[46] = new Bill("piar-rename", 11, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["amend"]);
+], ["amend"], ' fa-quote-right');
 square[47] = new Bill("piar-create", 11, [
 	new Price(5, 5), new Price(10, 10), new Price(15, 15)
-], ["amend"]);
+], ["amend"], ' fa-check');
 
 var communityChestCards = [];
 var chanceCards = [];
 
-communityChestCards.push(new TicketCard("rejectBillCard", 1));
-/*for (var i = 1; i <= 1; i++) {
+for (var i = 1; i <= 3; i++) {
     communityChestCards.push(new MoneyCard(i, true));
 	chanceCards.push(new MoneyCard(i, true));
 	chanceCards.push(new MoneyCard(i, false));
@@ -381,13 +380,11 @@ for (var i = 1; i <= 1; i++) {
 	chanceCards.push(new RatingCard(i, "people"));
 	chanceCards.push(new RatingCard(i, "assembly"));
 }
-chanceCards.push(new GotoCard(i, "law"));
-chanceCards.push(new GotoCard(i, "jail"));
-chanceCards.push(new GotoCard(i, "vacation"));
-chanceCards.push(new GotoCard(i, "meeting"));
-chanceCards.push(new GotoCard(i, "lobby"));
-chanceCards.push(new ChangePartyOfferCard(i));
-*/
+for (var i = 4; i <= 44; i+=4){
+	chanceCards.push(new GotoCard(i, "jail"));
+}
+//chanceCards.push(new ChangePartyOfferCard(i));
+
 
 function Party(text, difficulty, groupsReaction, specialization) {
     this.text = text;

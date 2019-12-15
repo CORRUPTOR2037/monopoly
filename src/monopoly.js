@@ -4,6 +4,8 @@ var player;
 
 var turn = 0;
 
+var debugLog = false;
+
 // Overwrite an array with numbers from one to the array's length in a random order.
 Array.prototype.randomize = function(length) {
 	length = (length || this.length);
@@ -453,14 +455,14 @@ function updateOwned() {
 		$("#cell" + i + "owner").attr('class', "cell-owner " + (squareItem.owner > 0 ? player[squareItem.owner].style : "hidden") + (squareItem.forceMove ? " protected" : ""));
 		$("#cell" + i + " .cell-spec").attr('class', "cell-spec" + (currentPlayer.party.specialization.includes(squareItem.group) ? " active" : ""));
 		
-		var array = $("#" + squareItem.cell.id + " .cell-card div");
+		var array = $("#" + squareItem.cell.id + " .cell-card .cell-info-line");
 		for (var j = 0; j < 3; j++) {
-			array[j].className = "";
+			array[j].classList.remove("bill-state-green", "bill-state-yellow");
 			if (i != currentPlayer.position || buttons.rollDices.is(":visible")) continue;
 			if (j < squareItem.state) {
-				array[j].className = "bill-state-green";
+				array[j].classList.add("bill-state-green");
 			} else if (j == squareItem.state && i == player[turn].position) {
-				array[j].className = "bill-state-yellow";
+				array[j].classList.add("bill-state-yellow");
             }
         }
 		
@@ -664,7 +666,14 @@ function buy(playerIndex, bill, cost, direction) {
 		bill.owner = playerIndex;
 		bill.direction += direction;
 		bill.moveState();
-		gameLog.add(getString("buy-message").replace("%player", p.name).replace("%bill", bill.uiName).replace("%price", cost), p, -1);
+		gameLog.add(
+			getString("buy-message")
+				.replace("%player", p.name)
+				.replace("%bill", bill.uiName)
+				.replace("%price", cost)
+				.replace("%action", getString(bill.sides[1 - direction])),
+			p, -1
+		);
 
 		updateOwned();
 
@@ -710,7 +719,14 @@ function amend() {
 	if (p.money >= cost) {
 		p.pay(cost);
 		bill.amendments++;
-		gameLog.add(getString("amended-to").replace("%player", p.name).replace("%place", bill.uiName).replace("%price", cost), p, -1);
+		gameLog.add(
+			getString("amended-to")
+				.replace("%player", p.name)
+				.replace("%place", bill.uiName)
+				.replace("%price", cost)
+				.replace("%action", getString(bill.sides[1 - direction])),
+				p, -1
+		);
 		if (p.AI) {
 			bill.direction += p.party.groupsReaction[bill.style] * amendMultiplier;
 		} else {
@@ -1007,7 +1023,9 @@ function land() {
 
 	var squareName = s.uiName;
 	landedPanel.show(getString("you-landed").replace("#name", currentPlayer.name) + " " + squareName + ".");
-	gameLog.add(getString("landed-on").replace("%player", currentPlayer.name).replace("%place", squareName), currentPlayer);
+	if (debugLog) {
+		gameLog.add(getString("landed-on").replace("%player", currentPlayer.name).replace("%place", squareName), currentPlayer);
+	}
 	
 	updatePosition();
 
@@ -1033,10 +1051,12 @@ function roll() {
 	var die1 = game.getDie(1);
 	var die2 = game.getDie(2);
 	
-	gameLog.add(
-		getString("rolled").replace("%player", currentPlayer.name).replace("%number", (die1 + die2)) +
-		(die1 == die2 ? " - " + getString("doubles") + "." : "."), p
-	);
+	if (debugLog) {
+		gameLog.add(
+			getString("rolled").replace("%player", currentPlayer.name).replace("%number", (die1 + die2)) +
+			(die1 == die2 ? " - " + getString("doubles") + "." : "."), p
+		);
+	}
 
 	if (die1 == die2 && !currentPlayer.jail) {
 		updateDices();
@@ -1125,6 +1145,7 @@ function roll() {
 			var payAmount = 0;
 			Object.keys(payment).forEach(function(key){
 				var amount = payment[key];
+				if (amount == 0) return;
 				payAmount += amount;
 				if (amount > 0) {
                     report += "<p class='pay-info payUp'>"
@@ -1208,7 +1229,9 @@ function play() {
     }
 	game.resetDice();
 
-	gameLog.add(getString("it-is-turn").replace("%player", currentPlayer.name), currentPlayer);
+	if (debugLog) {
+        gameLog.add(getString("it-is-turn").replace("%player", currentPlayer.name), currentPlayer);
+    }
 
 	// Check for bankruptcy.
 	currentPlayer.pay(0);
@@ -1277,9 +1300,10 @@ function cellInner(point, id){
 			'<div class="cell-card">' +
 			   '<span class="cell-cat">' + getString(point.group.name) + '</span>' +
 		       '<span class="cell-name">' + getString(point.name) + '</span>' +
-		       '<div><span class="cell-goal">' + getString('first-goal') + '</span><span class="cell-money">' + point.prices[0].buy + '/' + point.prices[0].visit + '</span></div>' +
-		       '<div><span class="cell-goal">' + getString('second-goal') + '</span><span class="cell-money">' + point.prices[1].buy + '/' + point.prices[1].visit + '</span></div>' +
-		       '<div><span class="cell-goal">' + getString('third-goal') + '</span><span class="cell-money">' + point.prices[2].buy + '/' + point.prices[2].visit + '</span></div>' +
+		       '<p class="cell-info-line"><span class="cell-goal">' + getString('first-goal') + '</span><span class="cell-money">' + point.prices[0].buy + '/' + point.prices[0].visit + '</span></p>' +
+		       '<p class="cell-info-line"><span class="cell-goal">' + getString('second-goal') + '</span><span class="cell-money">' + point.prices[1].buy + '/' + point.prices[1].visit + '</span></p>' +
+		       '<p class="cell-info-line"><span class="cell-goal">' + getString('third-goal') + '</span><span class="cell-money">' + point.prices[2].buy + '/' + point.prices[2].visit + '</span></p>' +
+			   '<div class="fa fa-5x ' + point.icon + '"></div>' + 
 			   '<div class="cell-spec"></div>' +
 		   '</div>';
 	}
@@ -1504,7 +1528,7 @@ function setup() {
 	$("body").on("mouseup", function() {
 		drag = false;
 	});
-	$('.panel').on('mousedown', function(e) {
+	$('.window').on('mousedown', function(e) {
 		dragObj = this;
 		dragObj.style.position = "relative";
 

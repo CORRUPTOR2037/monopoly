@@ -8,6 +8,9 @@
 	<script src="./ms-Dropdown/js/msdropdown/jquery.dd.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="./ms-Dropdown/css/msdropdown/dd.css" />
 	<link rel="stylesheet" type="text/css" href="./ms-Dropdown/css/msdropdown/sprite.css" />
+	<link href="https://fonts.googleapis.com/css?family=Lora&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css">
+
 	
 	<link rel="stylesheet" type="text/css" href="./styles.css" />
 	
@@ -19,9 +22,21 @@
 </head>
 
 <body>
+	<!--<div id="startscreen">
+		<div id="hugetitle">
+			<h1>Депутат</h1>
+			<h3>Настольная политическая игра</h3>
+			<button onclick="showGame()">Начать игру</button>
+		</div>
+		<div id="titledescription">
+			<h5>Автор: CORRUPTOR2037</h5>
+			<h5>Автор идеи: Майкл Наки</h5>
+			<h5>Муза: Екатерина Шульман</h5>
+		</div>
+	</div>-->
 	<div id="popupbackground"></div>
 	<div id="popupwrap" class="alert-text">
-		<div id="popup" class="panel">
+		<div id="popup" class="window panel">
 			<div style="position: relative;">
 				<!-- <img id="popupclose" src="Images/close.png" title="Close" alt="x" onclick="hide('popupbackground'); hide('popupwrap');" /> -->
 				<div id="popup-text"></div>
@@ -31,7 +46,7 @@
 
 	<div id="statsbackground"></div>
 	<div id="statswrap">
-		<div class="panel" id="stats">
+		<div class="window panel" id="stats">
 			<div style="position: relative;">
 				<img id="statsclose" class="windowclose" src="images/close.png" title="Close" alt="x" />
 				<div id="statstext"></div>
@@ -43,17 +58,10 @@
 	<p id="noscript">
 		Note: This page will not function without JavaScript.
 	</p>
-	<script type="text/javascript">
-		$("#noscript").hide();
-	</script>
-
-	<div id="refresh">
-		Refresh this page to start a new game.
-	</div>
 
 	<div class="enlarge" id="enlarge"></div>
 
-	<div class="game-window">
+	<div class="game-window" id="game-setup">
 
 		<div id="setup">
 			<div style="margin-bottom: 20px;">
@@ -217,7 +225,7 @@
 	</div>
 	
 	<div id="lobbyscreen">
-		<div class='panel'>
+		<div class='window panel'>
 			<img id="lobbyclose" class="windowclose" src="images/close.png" title="Close" alt="x" />
 			<div id="lobby-help" class="alert-text localized-string">Lobby Help</div>
 			<table></table>
@@ -225,6 +233,12 @@
 	</div>
 	<script type="text/javascript">
 		$('.localized-string').map(setString);
+		$("#noscript").hide();
+		//$("#game-setup").hide();
+		function showGame() {
+			$("#startscreen").fadeOut(400);
+            $("#game-setup").fadeIn(400);
+        }
 	</script>
 </body>
 </html>
