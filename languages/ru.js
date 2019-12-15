@@ -80,20 +80,28 @@ strings = {
     "you-landed": "#name попал на",
     "amended-to": "%player внёс поправки в законопроект %place, призванные его %action.",
     "roll-dices": "Бросить кубики",
+    "roll-dices-title": "Бросьте кубики, чтобы начать ход. Далее выбирайте из доступных вариантов.",
     "roll-again": "Бросить заново",
     "end-turn": "Окончить ход",
-    "end-turn-title": "Закончить ход и перейти к следующему игроку",
+    "end-turn-title": "Закончить ход и перейти к следующему игроку.",
     "buy-menu-item": "Внести",
-    "pass-menu-item": "Пропустить",
+    "buy-menu-title": "Внести законопроект по тематике, на которой стоит игрок.",
     "say-menu-item": "Обсудить",
+    "say-menu-title": "Сделать заявление по тому, какие изменения в законопроекте необходимы. Никаких инициатив не будет внесено.",
     "lobby-menu-item": "Участвовать",
+    "lobby-menu-title": "Поучаствовать в бирже лоббистов, чтобы изменить показатели доверия лоббистов.",
     "move-menu-item": "Продвинуть",
+    "lobby-menu-title": "Отправить законопроект на следующую ступень рассмотрения.",
     "amend-menu-item": "Дополнить",
-    "take-menu-item": "Взять",
+    "lobby-menu-title": "Внести поправку в законопроект.",
     "visit-menu-item": "Посетить",
     "confirm-selection-menu-item": "Подтвердить",
     "cancel-selection-menu-item": "Отменить",
     "vacation-menu-item": "Отправиться",
+    "vacation-menu-title": "Отправиться в отпуск. Вы пропустите несколько ходов.",
+    "money-title": "Ваша сумма в рублях, которую вы можете тратить на внесение законопроектов.",
+    "people-rating-title": "Ваш народный рейтинг",
+    "assembly-rating-title": "Ваш аппаратный рейтинг",
     "review-bills-count": "На рассмотрении: ",
     "accepted-bills-count": "Принято: ",
     "rejected-bills-count": "Отклонено: ",
@@ -246,7 +254,8 @@ function setString(ind, obj) {
     if (obj.tagName.toLowerCase() == 'input') {
         obj.value = strings[obj.id];
     } else {
-        obj.innerHTML = strings[obj.id];
+        if (obj.tagName.toLowerCase() == 'button')
+            obj.innerHTML = strings[obj.id];
         if (obj.title) {
             obj.title = strings[obj.title];
         }

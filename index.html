@@ -139,10 +139,16 @@
 				</td>
 				<td style="vertical-align: top; border: none;" rowspan="2">
 					<div id="quickstats" style="">
-						<div><span class="icon money-icon left"></span><span id="qs-money"></span></div>
+						<div class="localized-string" title="money-title">
+							<span class="icon money-icon left"></span>
+							<span id="qs-money"></span>
+						</div>
 						<div class="bottom">
-							<span class="icon people-icon left"></span><span id="qs-people-rating" class="rating left"></span>
-							<span class="icon assembly-icon right"></span><span id="qs-assembly-rating" class="rating right"></span>
+							<span class="icon people-icon left localized-string" title="people-rating-title" ></span>
+							<span id="qs-people-rating" class="rating left localized-string" title="people-rating-title"></span>
+							
+							<span class="icon assembly-icon right localized-string" title="assembly-rating-title"></span>
+							<span id="qs-assembly-rating" class="rating right localized-string" title="assembly-rating-title"></span>
 						</div>
 					</div>
 				</td>
@@ -155,17 +161,15 @@
 			<tr>
 				<td>
 					<div id="menu">
-						<button class="menu-item localized-string" id="buy-menu-item" onclick="buyChooseSide()">Buy</button>
+						<button class="menu-item localized-string" id="buy-menu-item" title="buy-menu-title" onclick="buyChooseSide()">Buy</button>
 						<!-- <button class="menu-item localized-string" id="pass-menu-item" onclick="passBuy()">Pass</button> -->
-						<button class="menu-item localized-string" id="amend-menu-item" onclick="amend()">Amend</button>
-						<button class="menu-item localized-string" id="say-menu-item" onclick="askSay()">Say</button>
-						<button class="menu-item localized-string" id="move-menu-item" onclick="moveBill()">Move</button>
-						<button class="menu-item localized-string" id="lobby-menu-item" onclick="openLobby()">Lobby</button>
-						<button class="menu-item localized-string" id="vacation-menu-item" onclick="openVacation()">Vacation</button>
-						<button class="menu-item localized-string" id="confirm-selection-menu-item" onclick="confirmSelection()">Confirm</button>
-						<button class="menu-item localized-string" id="cancel-selection-menu-item" onclick="cancelSelection()">Cancel</button>
-						<button class="menu-item localized-string" id="take-menu-item">Take</button>
-						<button class="menu-item localized-string" id="visit-menu-item">Visit</button>
+						<button class="menu-item localized-string" id="amend-menu-item" title="amend-menu-title" onclick="amend()">Amend</button>
+						<button class="menu-item localized-string" id="say-menu-item" title="say-menu-title" onclick="askSay()">Say</button>
+						<button class="menu-item localized-string" id="move-menu-item" title="move-menu-title" onclick="moveBill()">Move</button>
+						<button class="menu-item localized-string" id="lobby-menu-item" title="lobby-menu-title" onclick="openLobby()">Lobby</button>
+						<button class="menu-item localized-string" id="vacation-menu-item" title="vacation-menu-title" onclick="openVacation()">Vacation</button>
+						<button class="menu-item localized-string" id="confirm-selection-menu-item" title="confirm-selection-title" onclick="confirmSelection()">Confirm</button>
+						<button class="menu-item localized-string" id="cancel-selection-menu-item" title="cancel-selection-title" onclick="cancelSelection()">Cancel</button>
 					</div>
 					<div style="float: right;">
 						<img id="die0" title="Die" class="die die-no-img"></img>
