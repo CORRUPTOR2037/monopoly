@@ -95,6 +95,7 @@ strings = {
     "amend-menu-item": "Дополнить",
     "lobby-menu-title": "Внести поправку в законопроект.",
     "visit-menu-item": "Посетить",
+    "meeting-menu-item": "Посетить",
     "confirm-selection-menu-item": "Подтвердить",
     "cancel-selection-menu-item": "Отменить",
     "vacation-menu-item": "Отправиться",

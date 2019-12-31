@@ -1138,7 +1138,7 @@ a.card {
 }
 
 
-#lobbyscreen {
+#lobbyscreen, #meetingscreen {
     border-spacing: 0px;
     position: absolute;
     top: 255px;
@@ -1150,7 +1150,7 @@ a.card {
     -webkit-user-select: none;
     user-select: none;
 }
-#lobbyscreen .panel {
+.window.panel {
     margin: auto;
     padding: 20px;
     top: 0px;

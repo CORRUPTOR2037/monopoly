@@ -294,6 +294,27 @@ function VacationWindow() {
 }
 var vacationWindow = new VacationWindow();
 
+function MeetingWindow() {
+	this.window = $("#meetingscreen");
+	
+	let self = this;
+	$("#meetingclose").on("click", function() {
+		self.hide();
+	});
+	
+	this.show = function(){
+		$("#popupbackground").fadeIn(400, function() {
+			self.window.show();
+		});
+	}
+	this.hide = function(){
+		self.window.hide();
+		$("#popupbackground").fadeOut(400);
+	}
+	this.hide();
+}
+var meetingWindow = new MeetingWindow();
+
 
 
 function Stats() {
@@ -364,25 +385,13 @@ function LobbyScreen() {
 		var rows = $("#lobbyscreen tr");
 		for (var j = 1; j < rows.length-1; j++) {
 			var cells = rows[j].getElementsByTagName("td");
+			var lobbyName = rows[j].getAttribute("name");
 			for(var i = 0; i < cells.length; i++){
-				cells[i].classList.remove('selected');
-				cells[i].removeAttribute('onclick');
-				var key = lobbyTypes[j-1].name;
-				if (currentPlayer.lobby[key] == i) {
-                    cells[i].classList.add('selected');
-					if (!this.usedOnThisTurn.includes(key)) {
-						cells[i].onclick = function(){
-							var target = event.target.getAttribute('name');
-							alert.showRoll(getString("lobby-you-need-roll").replace("%value", currentPlayer.party.lobbyRollBarrier), function(value){
-								lobbyScreen.usedOnThisTurn.push(target);
-								currentPlayer.setLobbyRating(target, currentPlayer.lobby[target] + currentPlayer.party.lobbyAddition(value));
-								lobbyScreen.show();
-							});
-						};
-					} else {
-						cells[i].classList.add('used');
-					}
-                }
+				var cellIndex = parseInt(cells[i].getAttribute("index"));
+				if (cellNamecurrentPlayer.lobby[lobbyName] <= cellIndex)
+                    cells[i].classList.add('filled');
+				else
+					cells[i].classList.remove('filled');
 			}
 		}
 		$("#popupbackground").fadeIn(400, function() {
@@ -394,21 +403,32 @@ function LobbyScreen() {
 		$("#popupbackground").fadeOut(400);
 	};
 	
+	// header
 	var HTML = "<tr>";
 	for (var j = 0; j < lobbyProgressLength; j++) {
 		HTML += '<th><span>' + j + '</span></th>';
 	}
 	HTML += "</tr>";
+	// lobby rows
 	for (var i = 0; i < lobbyTypes.length; i++) {
-        HTML += "<tr>";
+		var lobbyName = lobbyTypes[i].name;
+		HTML += '<tr name="' + lobbyName + '">';
+
+		var rollLobby = $('<td class="lobby-title" name="' + lobbyName + '">');
+		rollLobby.on("click", function() {
+			var target = event.target.getAttribute('name');
+			alert.showRoll(getString("lobby-you-need-roll").replace("%value", currentPlayer.party.lobbyRollBarrier), function(value){
+				lobbyScreen.usedOnThisTurn.push(target);
+				currentPlayer.setLobbyRating(target, currentPlayer.lobby[target] + currentPlayer.party.lobbyAddition(value));
+				lobbyScreen.show();
+			});
+		})
+        
 		for (var j = 0; j < lobbyProgressLength; j++) {
-			var cl = lobbyTypes[i].name;
-			if (j % lobbyLevelLength == lobbyLevelLength - 1) {
-				cl += " last";
-			}
-            HTML += '<td name="' + lobbyTypes[i].name + '"><div class="' + cl + '"></div></td>';
+			var squareClass = lobbyName + (j % lobbyLevelLength == lobbyLevelLength - 1 ? " last" : "");
+            HTML += '<td index="' + j + '"><div class="' + squareClass + '"></div></td>';
 		}
-		HTML += '<td><span class="lobby-title">' + getString("lobby-type-" + lobbyTypes[i].name) + '</span></td>'
+		HTML += '<td><span class="lobby-title">' + getString("lobby-type-" + lobbyName) + '</span></td>'
 		HTML += "</tr>";
     }
 	HTML += "<tr>";
@@ -917,7 +937,15 @@ function corruptionTake(square, player) {
 	}
 }
 function meeting(square, player) {
-	nextTurn();
+	if (p.isAI) {
+        p.AI.rollMeeting();
+		nextTurn();
+    } else {
+		buttons.update(["meeting", "end-turn"]);
+	}
+}
+function useMeeting() {
+    meetingWindow.show();
 }
 function scandal(square, player) {
 	nextTurn();
